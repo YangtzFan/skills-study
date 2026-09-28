@@ -2,7 +2,7 @@
 
 `skills-study` 是一组面向 Codex CLI 的仓库级技能，主要用于研究任务路由、网页检索、本地文档处理、证据问答以及图片分析。
 
-本仓库目前作为 `NewToNoC` 的 Git 子模块使用。父仓库通过 `AGENTS.md` 将所有请求路由到 `research-browser`，再由该技能根据任务类型加载其他技能。
+本仓库可以作为 Git 子模块使用，只需在父仓库通过 `AGENTS.md` 将所有请求路由到 `research-browser`，再由该技能根据任务类型加载其他技能。
 
 ## 技能列表
 
