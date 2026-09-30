@@ -10,15 +10,17 @@ description: Answer questions from previously ingested local documents with prec
 - Use this skill when a relevant `doc_id` already exists from `document-ingest`.
 - Use it when the user asks a factual question about an ingested document.
 - Use it for the local-document phase of a combined local and external research task.
+- Use it when the answer depends on a document registered in the project knowledge base at `.agents-work/knowledge/`.
 
 ## Inputs
 
-- `doc_id`: One document identifier or a list of document identifiers.
+- `doc_id`: One document identifier or a list of document identifiers. A knowledge base document is addressed by the same `doc_id` form.
 - `question`: The question to answer from the documents.
 - `top_k`: The optional maximum number of retrieved chunks, with a default of 8.
 
 ## Retrieval
 
+- Read `.agents-work/knowledge/index.md` first when the question may concern project background, and include the relevant knowledge base documents alongside any documents ingested for the current task.
 - For a document with no more than 30 chunks, read its `content.md` in full when the context window permits.
 - For a larger document or multiple documents, retrieve approximately 20 candidate sections from `chunks.md` with keyword or BM25 search, optionally rerank them with embeddings when a configured vector store is available, and retain the best `top_k` chunks.
 - Preserve `chunk_id`, page, section, sheet, or slide metadata throughout retrieval.
@@ -60,9 +62,9 @@ Omit the `Not Found` section when every part of the question is answered.
 
 ## Work Directory
 
-- Read document artifacts only from `skills-study/work-dir/<task-id>/documents/<doc_id>/` unless the user explicitly provides another existing ingestion location.
-- If retrieval notes, evidence selections, or draft synthesis must be persisted, write them as Markdown files under the active `skills-study/work-dir/<task-id>/` directory.
-- Do not persist indexes, embeddings, JSON, or other non-Markdown intermediate files in `skills-study/work-dir/`. Use an ephemeral system temporary location when a tool requires such data.
+- Read document artifacts from `.agents-work/<task-id>/documents/<doc_id>/` for the current task, and from `.agents-work/knowledge/documents/<doc_id>/` for project background documents, unless the user explicitly provides another existing ingestion location.
+- If retrieval notes, evidence selections, or draft synthesis must be persisted, write them as Markdown files under the active `.agents-work/<task-id>/` directory.
+- Do not persist indexes, embeddings, JSON, or other non-Markdown intermediate files in the work directory. Use an ephemeral system temporary location when a tool requires such data.
 
 ## Failure Handling
 

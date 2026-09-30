@@ -39,9 +39,9 @@ Do not invent a relay URL, credential, protocol, or model identifier when config
 
 ## Work Directory
 
-- When analysis must be persisted, write `skills-study/work-dir/<task-id>/images/<image-id>/analysis.md` and register it in the task's `index.md`.
+- When analysis must be persisted, write `.agents-work/<task-id>/images/<image-id>/analysis.md` at the workspace root and register it in the task's `index.md`.
 - Include source provenance, image hash, OCR engine and result, relay provider alias, model identifier, relay result, discrepancies, confidence limitations, and sanitized errors.
-- Do not copy or persist the image itself under `skills-study/work-dir/`.
+- Do not copy or persist the image itself under the work directory.
 - Keep any rendered page, crop, encoded payload, or relay response body that is not Markdown in an operating-system temporary directory and remove it after the Markdown analysis has been written successfully.
 
 ## Failure Reporting

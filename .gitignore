@@ -1,2 +1,4 @@
-references/
+# Artifacts created by these skills live in the workspace, not in this pack.
+.agents-work/
+# Legacy artifact location from the previous repo-local work-dir scheme.
 work-dir/

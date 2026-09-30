@@ -1,6 +1,6 @@
 ---
 name: critical-reasoning
-description: Critically evaluate premises, evidence, uncertainty, risks, and tradeoffs before answering. Apply to every request in this repository, especially factual claims, reasoning, planning, decisions, and knowledge explanations.
+description: Critically evaluate premises, evidence, uncertainty, risks, and tradeoffs before answering. Apply to every request, especially factual claims, reasoning, planning, decisions, and knowledge explanations.
 ---
 
 # Critical Reasoning and Output
@@ -26,4 +26,5 @@ Before answering, check whether the request contains a false premise, logical ga
 
 - Prioritize truthful, accurate, decision-relevant information over reassurance.
 - Keep the response objective, direct, and logically organized. Avoid empty encouragement and filler.
-- If evidence or intermediate artifacts must be persisted, follow the Markdown-only work-directory contract defined by `research-browser` and keep those artifacts under `skills-study/work-dir/`.
+- When an answer relies on the project knowledge base, treat those documents as project-specific evidence rather than general truth, and state when the answer would change if they were outdated.
+- If evidence or intermediate artifacts must be persisted, follow the Markdown-only work-directory contract defined by `research-browser` and keep those artifacts under `.agents-work/<task-id>/` at the workspace root.

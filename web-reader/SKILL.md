@@ -40,15 +40,15 @@ python -m trafilatura -u "$URL" --markdown
 4. Preserve meaningful headings, lists, tables, links, and code blocks.
 5. Capture the title, author, publication date, and site name when the page provides them.
 6. Retain verbatim passages that directly support the claims for which the page will be cited.
-7. If an image on the page is itself material evidence and text extraction is insufficient, read and apply `skills-study/image-analysis/SKILL.md` to that image.
+7. If an image on the page is itself material evidence and text extraction is insufficient, read and apply `../image-analysis/SKILL.md` to that image.
 
 ## Work Directory
 
-- When page content or evidence must be persisted, write it to `skills-study/work-dir/<task-id>/web/<source-id>.md` and register it in the task's `index.md`.
+- When page content or evidence must be persisted, write it to `.agents-work/<task-id>/web/<source-id>.md` at the workspace root and register it in the task's `index.md`.
 - Include the original URL, final URL, retrieval time, available publication metadata, selected quotations, and extracted content in the Markdown file.
-- Do not save raw HTML, response dumps, PDFs, screenshots, or other non-Markdown files in `skills-study/work-dir/`.
+- Do not save raw HTML, response dumps, PDFs, screenshots, or other non-Markdown files in the work directory.
 - If a non-Markdown download is required for extraction, keep it in an operating-system temporary directory and remove it after the durable Markdown evidence has been written successfully.
-- Store OCR text, relay-model observations, and any relay failure report for relevant page images in the corresponding Markdown evidence file or in a linked file under `skills-study/work-dir/<task-id>/images/`.
+- Store OCR text, relay-model observations, and any relay failure report for relevant page images in the corresponding Markdown evidence file or in a linked file under `.agents-work/<task-id>/images/`.
 
 ## Output
 

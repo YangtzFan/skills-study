@@ -1,8 +1,10 @@
 # skills-study
 
-`skills-study` 是一组面向 Codex CLI 的仓库级技能，主要用于研究任务路由、网页检索、本地文档处理、证据问答以及图片分析。
+`skills-study` 是一组面向支持 Agent Skills 规范的编码代理（Pi、Codex CLI 等）的技能，主要用于研究任务路由、网页检索、本地文档处理、证据问答以及图片分析。
 
-本仓库可以作为 Git 子模块使用，只需在父仓库通过 `AGENTS.md` 将所有请求路由到 `research-browser`，再由该技能根据任务类型加载其他技能。
+本仓库既可以**全局安装**，作为所有工作区通用的技能包；也可以作为 **Git 子模块**挂载到某个仓库，只在该仓库内生效。
+
+所有技能之间的引用都使用相对于技能目录的路径，工件写入当前工作区，因此安装路径和安装方式都不需要修改仓库内容。
 
 ## 技能列表
 
@@ -32,40 +34,113 @@ AGENTS.md
 
 `critical-reasoning` 对所有请求生效。其他技能只在任务需要对应能力时加载。
 
-## 作为子模块使用
+## 安装
 
-将本仓库挂载到父仓库根目录的 `skills-study`：
+### 全局安装（推荐）
+
+把仓库克隆到 Agent Skills 的全局目录：
+
+```bash
+git clone git@github.com:YangtzFan/skills-study.git ~/.agents/skills
+```
+
+Pi 会自动发现 `~/.agents/skills/` 下的全部技能，不需要额外配置技能路径。然后在 Pi 的用户级指令文件 `~/.pi/agent/AGENTS.md` 中添加入口路由：
+
+```markdown
+Before handling any request, read and follow @~/.agents/skills/research-browser/SKILL.md.
+```
+
+该文件对所有工作目录生效，因此全局安装的技能包会自动参与每一个会话。
+
+### 项目内子模块
+
+只需要在单个仓库中生效时，把本仓库作为子模块挂载：
 
 ```bash
 git submodule add git@github.com:YangtzFan/skills-study.git skills-study
-git submodule update --init --recursive
 ```
 
-在父仓库的 `AGENTS.md` 中添加路由：
+`git submodule add` 会同时完成克隆和登记，不需要再执行 `submodule update --init`（本仓库没有嵌套子模块）。子模块可以挂载到任意路径和任意目录名，因为技能内部引用全部相对于技能目录解析。
+
+与普通子模块不同，挂载后的技能包**不会被自动发现**：代理只扫描 `.pi/skills/`、`.pi/extensions/` 等项目目录，以及 `.agents/skills/`（从工作目录向上找到仓库根）。`skills-study/web-search/SKILL.md` 不属于其中任何一个，所以需要下面两种方式之一。
+
+**方式一：AGENTS.md 路由**（不需要项目信任）
 
 ```markdown
 Before handling any request in this repository, read and follow [skills-study/research-browser/SKILL.md](skills-study/research-browser/SKILL.md).
 ```
 
-当前技能文件使用 `skills-study/...` 形式的仓库相对路径，因此子模块应保持该目录名。如果挂载到其他路径，需要同步修改所有内部引用和父仓库路由。
+模型把 `AGENTS.md` 当作上下文读入，再按其中的相对路径读取技能文件。实测项目未被信任时该文件依然加载。代价是技能不会注册成 `/skill:<name>` 命令，效果完全依赖模型遵守这条指令。
+
+**方式二：显式注册**（需要项目信任，会注册 `/skill:<name>`）
+
+在项目 `.pi/settings.json` 中登记挂载目录：
+
+```json
+{
+  "skills": ["../skills-study"]
+}
+```
+
+指向目录会递归注册其中全部 `SKILL.md`。注意项目设置里的路径**相对于 `.pi/` 解析**，所以要写 `../skills-study` 而不是 `skills-study`，也可以使用绝对路径或 `~` 开头的路径。`.pi/settings.json` 属于受项目信任保护的资源，未授予信任时整个文件被忽略，技能也就不会注册。
+
+## 路径约定
+
+- 跨技能引用使用相对于技能目录的路径，例如 `../web-search/SKILL.md` 指向同级的 `web-search` 技能。
+- 技能包根目录是 `research-browser/SKILL.md` 所在目录的上一级目录。
+- 新增或修改技能时不要写死绝对路径，也不要假设技能包的目录名。
 
 ## 工件目录
 
-需要持久化的证据、抽取结果和中间工件统一写入：
+需要持久化的证据、抽取结果和中间工件统一写入当前工作区的任务目录：
 
 ```text
-skills-study/work-dir/<task-id>/
+<workspace>/.agents-work/<task-id>/
 ```
 
-该目录遵循以下约束：
+`<workspace>` 是当前工作目录。该目录遵循以下约束：
 
 - 只允许持久化 UTF-8 Markdown 文件。
 - 每个任务使用独立的 `<task-id>` 目录，并通过 `index.md` 登记工件来源、用途和相对路径。
+- `.agents-work/knowledge/` 是保留目录名，用于跨任务的项目知识库（见下一节），不会与 `<task-id>` 冲突，因为任务目录名始终以日期开头。
 - JSON、HTML、PDF、图片、数据库和其他非 Markdown 文件不得持久化到该目录。
 - 工具必须使用非 Markdown 文件时，应将其放入操作系统临时目录，并在完成 Markdown 转换后清理。
 - 用户提供的源文件保持原位且只读。
+- 不要把工件写进技能包目录，以保证技能包可以随时更新或重新克隆而不丢失证据。
 
-`work-dir/` 和 `references/` 默认由本仓库的 `.gitignore` 排除，不会随正常提交进入版本库。
+工件位于宿主项目内，建议在宿主项目的 `.gitignore` 中添加：
+
+```gitignore
+.agents-work/
+```
+
+## 项目知识库
+
+全局安装的技能包对所有项目共享，但背景资料通常只对某个项目有意义，因此每个工作区可以有自己的知识库：
+
+```text
+<workspace>/.agents-work/knowledge/
+├── index.md                     # 登记每个文档的 doc_id、原始路径、主题、摘要、入库时间
+└── documents/<doc_id>/
+    ├── content.md
+    ├── chunks.md
+    └── metadata.md
+```
+
+在该项目的工作区里直接提出请求即可：
+
+- `把 docs/architecture.pdf 加入本项目知识库`
+- `把 ~/specs/api-v3.docx 和 ./manual/ 目录下的文档都加入知识库`
+- `列出本项目知识库`
+- `把已过期的 x.pdf 从知识库移除`
+
+处理时走 `document-ingest` 的知识库模式：原始文件保持在原位且只读，知识库只保存 Markdown 派生件，并更新 `index.md`。`doc_id` 取自文件内容的哈希，因此源文件改动后会产生新的 `doc_id`，重新入库即可，不会错误复用旧内容。
+
+之后该项目内的每次任务都会先读取 `knowledge/index.md`，只在相关时加载具体文档，所以背景知识不必反复提供，也不会无条件占用上下文。
+
+知识库始终属于当前工作区，**不存在全局知识库**：全局安装只决定技能文件放在哪里，不会把技能包目录、agent 目录或其他用户级位置变成数据存放处；不同工作区的背景文档互不共享，也不会被提升到共享位置。如果某个工作区没有 `.agents-work/knowledge/`，就视为没有背景文档。
+
+知识库是项目级证据而非普遍真理：当它与更新的权威来源冲突时，应同时报告两者并说明时效，而不是静默取舍。
 
 ## 图片分析与隐私
 
@@ -83,4 +158,7 @@ skills-study/work-dir/<task-id>/
 - `SKILL.md` 必须包含标准 YAML frontmatter，并至少提供 `name` 和 `description`。
 - 所有 `SKILL.md` 使用英语；中文说明集中在本 README 中。
 - 不要在英文句子中间进行硬换行。
-- 新增或修改技能后，应运行 Codex 的 skill 校验器，并检查 Markdown 代码围栏、内部路径和工作目录约束。
+- 跨技能引用统一使用 `../<skill>/SKILL.md` 形式，不要引入绝对路径或依赖安装目录名。
+- 新增或修改技能后，在技能可被发现的位置启动代理，检查启动诊断是否有加载告警，并确认 `/skill:<name>` 命令可用；同时检查 Markdown 代码围栏、内部路径和工作目录约束。
+
+技能自带的参考材料放在该技能目录内部（例如 `<skill>/references/`），随仓库提交。包根目录不再保留 `references/` 约定，因为按 Agent Skills 规范 `references/` 是单个技能的附属目录，包根目录下的同名目录没有实际用途。

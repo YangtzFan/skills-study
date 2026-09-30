@@ -34,9 +34,9 @@ Useful filters include `recency`, `site`, language, and result type such as news
 
 ## Work Directory
 
-- When search results or query notes must be persisted, write them to `skills-study/work-dir/<task-id>/search/search-results.md` and register the file in the task's `index.md`.
+- When search results or query notes must be persisted, write them to `.agents-work/<task-id>/search/search-results.md` at the workspace root and register the file in the task's `index.md`.
 - Store queries, provider names, retrieval times, ranked result metadata, and selection rationale in the Markdown file.
-- Do not persist provider response JSON, HTML result pages, logs, or other non-Markdown files in `skills-study/work-dir/`.
+- Do not persist provider response JSON, HTML result pages, logs, or other non-Markdown files in the work directory.
 
 ## Output
 

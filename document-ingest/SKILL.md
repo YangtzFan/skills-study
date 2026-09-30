@@ -29,12 +29,22 @@ Use Docling or Unstructured only when a format-specific tool is unavailable or p
 
 1. Confirm that the file exists, determine its type from content or reliable metadata, and record its absolute path.
 2. Compute `doc_id` as the first 12 hexadecimal characters of the file's SHA-256 digest so the identifier remains stable when the file is moved.
-3. Create `skills-study/work-dir/<task-id>/documents/<doc_id>/` for derived artifacts only when the task needs persisted extraction results.
+3. Create `.agents-work/<task-id>/documents/<doc_id>/` at the workspace root for derived artifacts only when the task needs persisted extraction results.
 4. Extract text while preserving the source structure. Keep PDF page numbers, DOCX heading levels, spreadsheet sheet names, and PPTX slide numbers.
-5. For a standalone image, a scanned page, or visually significant content such as a diagram or table, read and apply `skills-study/image-analysis/SKILL.md`. Run local OCR as the baseline and request an approved relay vision model when its configuration and authorization requirements are satisfied.
+5. For a standalone image, a scanned page, or visually significant content such as a diagram or table, read and apply `../image-analysis/SKILL.md`. Run local OCR as the baseline and request an approved relay vision model when its configuration and authorization requirements are satisfied.
 6. Mark OCR-derived chunks with `"ocr": true` and model-derived observations with the configured relay and model identifiers.
 7. Write `content.md`, `chunks.md`, and `metadata.md` in the document artifact directory. Link any image-analysis Markdown produced under the active task directory, and do not create JSON, JSONL, HTML, plain-text, or binary artifacts there.
 8. Split content on structural boundaries before using size-based chunking. Target 800 to 1,200 tokens per chunk with approximately 100 tokens of overlap when overlap is useful.
+
+## Knowledge Base Mode
+
+Use this mode when `research-browser` adds or updates a project background document.
+
+- Write the derived artifacts to `.agents-work/knowledge/documents/<doc_id>/` instead of a task directory, so the document stays available to every later task in this project.
+- Update the registry at `.agents-work/knowledge/index.md`, keeping it a Markdown table that records `doc_id`, the original source path, the topic, a short summary, and the ingestion time.
+- Reuse an existing entry when the source file hash is unchanged instead of re-extracting a document that is already current.
+- Create `.agents-work/knowledge/` only when a document is actually added.
+- Everything else in this skill, including provenance, chunking, OCR handling, and the Markdown-only rule, applies unchanged.
 
 ## Output
 
@@ -48,14 +58,16 @@ Return JSON with this shape:
   "pages": 24,
   "words": 8312,
   "language": "en",
-  "content_md": "skills-study/work-dir/<task-id>/documents/ab12cd34ef56/content.md",
-  "chunks_md": "skills-study/work-dir/<task-id>/documents/ab12cd34ef56/chunks.md",
-  "metadata_md": "skills-study/work-dir/<task-id>/documents/ab12cd34ef56/metadata.md",
+  "content_md": ".agents-work/<task-id>/documents/ab12cd34ef56/content.md",
+  "chunks_md": ".agents-work/<task-id>/documents/ab12cd34ef56/chunks.md",
+  "metadata_md": ".agents-work/<task-id>/documents/ab12cd34ef56/metadata.md",
   "image_analysis_md": null,
   "anchors": ["p1", "p2", "sec:introduction"],
   "status": "ok"
 }
 ```
+
+In knowledge base mode the `content_md`, `chunks_md`, and `metadata_md` paths point into `.agents-work/knowledge/documents/<doc_id>/` instead of the task directory, and the result is also registered in `.agents-work/knowledge/index.md`.
 
 Write each chunk as a Markdown section in `chunks.md`. Keep its metadata in a compact table or fenced JSON block within that Markdown file:
 
@@ -77,8 +89,8 @@ Exact extracted text goes here.
 - Treat the source file as read-only.
 - Do not upload local file contents to a third-party service without explicit user consent.
 - Do not assume that a relay model alias such as `Image 2` supports image understanding. Confirm the configured model capability or report that it is unsupported.
-- Do not copy a user-provided source file into `skills-study/work-dir/`; keep it at its original path and persist only Markdown derivatives.
-- If extraction requires a non-Markdown temporary file, place it in the operating system's temporary directory, convert the useful result to Markdown under `skills-study/work-dir/`, and remove the temporary copy after successful extraction.
+- Do not copy a user-provided source file into the work directory; keep it at its original path and persist only Markdown derivatives.
+- If extraction requires a non-Markdown temporary file, place it in the operating system's temporary directory, convert the useful result to Markdown under `.agents-work/<task-id>/`, and remove the temporary copy after successful extraction.
 - Preserve page numbering exactly, including anchors for blank PDF pages.
 - Preserve enough provenance in every chunk to support exact citations later.
 - Do not claim exact page provenance for source formats that do not provide stable pages. Use section, sheet, or slide provenance instead.
