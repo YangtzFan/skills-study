@@ -7,7 +7,7 @@ description: Answer questions from previously ingested local documents with prec
 
 ## When to Use
 
-- Use this skill when a relevant `doc_id` already exists from `document-ingest`.
+- Use this skill when a relevant `doc_id` exists from `document-ingest`, either as an immediate extraction handoff or persisted artifacts.
 - Use it when the user asks a factual question about an ingested document.
 - Use it for the local-document phase of a combined local and external research task.
 - Use it when the answer depends on a document registered in the project knowledge base at `.agents-work/knowledge/`.
@@ -16,6 +16,7 @@ description: Answer questions from previously ingested local documents with prec
 
 - `doc_id`: One document identifier or a list of document identifiers. A knowledge base document is addressed by the same `doc_id` form.
 - `question`: The question to answer from the documents.
+- `extraction`: Optional immediate handoff from `document-ingest`, including `doc_id`, `content_markdown`, source anchors, and extraction coverage. It does not require artifact files.
 - `top_k`: The optional maximum number of retained evidence chunks per targeted retrieval pass, with a default of 8. It is not a coverage limit for document-wide questions or absence claims.
 
 ## Security and Privacy
@@ -28,9 +29,12 @@ description: Answer questions from previously ingested local documents with prec
 
 ## Retrieval
 
+- For an immediate extraction handoff, inspect its in-memory content and anchors directly; apply the same coverage and evidence rules without requiring `content.md` or `chunks.md`.
+- Authorized remote retrieval calls follow the Shared External Call Budget in `../research-browser/SKILL.md`; configuration does not reset that budget.
+
 - Read `.agents-work/knowledge/index.md` first when the question may concern project background, and include the relevant knowledge base documents alongside any documents ingested for the current task.
-- For a document with no more than 30 chunks, read its `content.md` in full when the context window permits.
-- For a larger document or multiple documents, retrieve approximately 20 candidate sections from `chunks.md` with local keyword or BM25 search. Optionally use embeddings or reranking only after satisfying the Security and Privacy requirements, and retain the best `top_k` evidence chunks for a targeted question.
+- For persisted documents with no more than 30 chunks, read `content.md` in full when the context window permits.
+- For larger persisted documents or multiple documents, retrieve approximately 20 candidate sections from `chunks.md` with local keyword or BM25 search. For large immediate handoffs, use their structural sections or in-memory chunks instead. Optionally use embeddings or reranking only after satisfying the Security and Privacy requirements, and retain the best `top_k` evidence chunks for a targeted question.
 - Preserve `chunk_id`, page, section, sheet, or slide metadata throughout retrieval.
 - Expand retrieval when the initial evidence is incomplete or conflicting: vary keywords and synonyms, inspect adjacent sections, and include relevant tables and appendices. Track the actual inspected scope separately from search hits or retained evidence.
 - For summaries, comparisons, counts, or completeness questions, inspect all relevant sections or process the document in batches. Do not treat a top-k sample as document-wide coverage; qualify the answer when full relevant coverage is not feasible.
@@ -79,5 +83,5 @@ Omit the `Not Found` section when every part of the question is answered.
 
 ## Failure Handling
 
-- If no `doc_id` exists, use `document-ingest` before answering.
-- If the cache or index is empty or unreadable, report the exact problem and stop instead of inferring document content.
+- If neither an immediate extraction handoff nor a `doc_id` with accessible artifacts exists, use `document-ingest` before answering.
+- If required persisted artifacts are empty or unreadable and no valid immediate handoff is available, report the exact problem instead of inferring document content. Never treat `null` paths from immediate mode as a cache failure.
