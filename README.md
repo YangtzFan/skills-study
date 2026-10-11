@@ -50,13 +50,15 @@ AGENTS.md
 git clone git@github.com:YangtzFan/skills-study.git ~/.agents/skills
 ```
 
-Pi 会自动发现 `~/.agents/skills/` 下的全部技能，不需要额外配置技能路径。然后在 Pi 的用户级指令文件 `~/.pi/agent/AGENTS.md` 中添加入口路由：
+Pi 会自动发现 `~/.agents/skills/` 下的全部技能，不需要额外配置技能路径。用户级指令正文保存在本仓库的 [`AGENTS.md`](AGENTS.md) 中；在 Pi 的用户级指令文件 `~/.pi/agent/AGENTS.md` 中保留一个轻量路由器：
 
 ```markdown
-Before handling any request, read and follow @~/.agents/skills/research-browser/SKILL.md.
+Before handling any request, read and follow `@~/.agents/skills/AGENTS.md`.
 ```
 
-该文件对所有工作目录生效，因此全局安装的技能包会自动参与每一个会话。
+这里的 `@` 是给模型的路径提示，不是 Pi 的自动文件包含语法；路由文件必须明确要求模型读取并遵循目标文件。该文件对所有工作目录生效，因此全局安装的技能包和质量指令会自动参与每一个会话。修改后运行 `/reload`，让当前会话重新加载用户级指令。
+
+**技术边界：** `AGENTS.md` 是全局上下文文件，不是 `SKILL.md`，不会被 skill 扫描器注册成 `/skill:AGENTS`。它通过 Pi 的用户级 `AGENTS.md` 路由进入上下文；如果技能仓库被移动、目标文件被删除或路由指令未被模型执行，质量指令就不会生效。因此应把 `AGENTS.md` 与技能文件一起纳入版本控制，并保留原路由文件。
 
 ### 项目内子模块
 
