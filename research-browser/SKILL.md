@@ -86,7 +86,7 @@ Choose exactly one case before beginning the research workflow. Route by the use
 
 ### Case 1: External Information
 
-Use this case when the request concerns current or recent information, news, market data, statistics, prices, official documentation, repositories, changelogs, academic literature, or an explicit web search.
+Use this case when the user asks for current or recent information, requests internet research, asks for an academic-literature search, or the answer materially depends on an external source not already supplied or verified. Do not browse just because a topic is technical. A conceptual explanation based on stable knowledge, or a follow-up grounded in documents already read in this conversation, normally needs no new web search; identify when recency or missing external evidence changes that choice.
 
 1. For supplied URLs, read and apply `../web-reader/SKILL.md` directly. For standalone image evidence, apply `../image-analysis/SKILL.md` directly. Load `../web-search/SKILL.md` only to discover sources needed by the question.
 2. When discovery is needed, select the most relevant and authoritative results, usually three to five URLs, within the shared external call budget.
@@ -94,7 +94,8 @@ Use this case when the request concerns current or recent information, news, mar
 4. Cross-check consequential claims with an independent source when practical. If only one authoritative primary source exists, identify that limitation.
 5. Answer with inline links and a `Sources` section.
 
-Handle inadequate results, transport failures, and provider fallbacks under the Shared External Call Budget. If available methods or the budget are exhausted, report the limitation and request a source URL when appropriate; do not start another retry loop here.
+Handle inadequate results, transport failures, and provider fallbacks under the Shared External Call Budget. If available methods or the budget are exhausted, return available evidence and explain the limitation; do not start another retry loop.
+
 
 ### Case 2: Local Documents
 
@@ -119,7 +120,9 @@ Use this case when the request compares a local document with current work, asks
 
 ### Case 4: No Research Required
 
-If the request needs neither external research nor a document extraction or evidence-retrieval workflow, handle it directly without invoking the research skills. This includes ordinary engineering work on local files; direct file reads and file/line citations do not require a `doc_id`.
+Use this case when the request needs neither external research nor a document extraction or evidence-retrieval workflow. This includes ordinary engineering work on local files; direct file reads and file/line citations do not require a `doc_id`.
+
+Also use it for stable conceptual explanations and follow-up questions answerable from sources already read in the active conversation. Reuse that evidence and its provenance instead of repeating expensive extraction or web calls. If the follow-up introduces a materially new, current, or unverified claim, switch to the applicable external or combined workflow.
 
 ### Case 5: Knowledge Base Maintenance
 
@@ -132,9 +135,13 @@ Use this case when the user asks to add, update, remove, or list the background 
 5. Accept a directory as a source by ingesting every supported file in it, and report any file that could not be ingested.
 6. Do not treat reading a document as consent to upload it, and do not add documents to the knowledge base that the user did not ask for.
 
-## Output Requirements
+## Synthesis and Quality Gate
 
-- Clearly separate sourced facts from inference or synthesis.
+- Keep source-reported facts, independently verified facts, and cross-source synthesis visibly distinct. A paper's experiment supports a claim under its tested setup, not a universal performance guarantee.
+- Before comparing reported results, check whether workload, hardware, baseline, metric, and evidence method are comparable. If not, explain the mismatch instead of ranking the numbers.
+- Use the smallest source set that adequately supports the answer; prioritize primary and authoritative material. Add independent corroboration for consequential claims when practical, not merely to increase the reference count.
+- Preserve disagreements, dates, provenance, and uncertainty. A newer source is not automatically more authoritative.
+- Before finalizing, check that each central external claim is supported by a source actually read, citations point to those sources, limitations and failed access are disclosed, and the answer still addresses the user's exact question and requested format.
 - Cite ingested document evidence with `doc_id` and page, section, sheet, or slide provenance. For direct engineering-file reads, cite file paths and line numbers instead.
 - Identify whether image-derived evidence came from OCR, host vision, a relay model, or a synthesis of those sources.
 - If an attempted relay request fails, report the failure explicitly even when local OCR succeeds. Do not hide the failure behind an OCR-only result.
