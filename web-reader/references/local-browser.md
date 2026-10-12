@@ -2,17 +2,12 @@
 
 Use this reference when a task needs an already-authorized browser session, interactive database access, or source-file downloads. It does not authorize access to unrelated tabs or credential export.
 
-## Connection
-
-1. Discover available browser tools and local runtime libraries. Reuse an authorized browser tool/session; do not install MCP or dependencies solely because browser automation is mentioned.
-2. A local Edge/Chromium CDP endpoint can be used if the user has enabled it. Connect only to loopback. Debugging grants control of the connected browser; use a dedicated research profile and inspect only relevant tabs.
-3. Check the endpoint and relevant page before claiming connection success. Browser, command-line, and remote-reader traffic may use different proxies or network exits. Do not modify proxy rules unless the task authorizes it and evidence identifies a routing problem.
-4. Let the user enter passwords, MFA, and CAPTCHA directly in the browser. Do not automate challenge solving, export cookies, or forward authenticated URLs to remote readers. Resume after the session state changes; reuse previous authorization.
+Connection setup, interactive research, and authentication decisions belong to [edge-browser-research](../../edge-browser-research/SKILL.md). This reference owns shared download mechanics and the existing helper interface; following that link does not restart an already active workflow.
 
 ## Downloads
 
-- Create `.agents-work/<task-id>/downloads/` before starting. Keep the browser/CDP connection alive from download configuration through the completion event; closing it early can restore the default destination.
-- Wait for completion with a bounded timeout, then inspect the actual file path, byte count, and signature. Record whether validation checked only the format or also parsed the document. Inspect the browser's download history if the file landed elsewhere; migrate only files identified as created by this task, subject to filesystem permissions.
+- Follow the Work Directory Contract in `../../research-browser/SKILL.md`. Create `.agents-work/<task-id>/downloads/` before starting. Keep the browser/CDP connection alive from download configuration through the completion event; closing it early can restore the default destination.
+- Wait for completion with a bounded timeout, then inspect the actual file path, byte count, and signature (PDF header `%PDF-` and EOF marker; CAJ/KDH markers for those formats). Record whether validation checked only the format or also parsed the document. Inspect the browser's download history if the file landed elsewhere; migrate only files identified as created by this task, subject to filesystem permissions.
 - A homepage institutional label does not prove full-text entitlement. A download button does not prove a completed download. CAJ/KDH success does not prove PDF availability or a working text parser.
 - Use short deterministic filenames on Windows. Refuse unintended overwrites. Use hashes to identify repeat files before deciding whether to retain or remove them.
 - Keep authentication-bearing URLs out of logs and indexes. Register files with a sanitized source page and a stable public article ID/DOI when available.

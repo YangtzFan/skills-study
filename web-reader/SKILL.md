@@ -8,7 +8,7 @@ description: Read specified web pages or download source documents, preserving p
 ## When to Use
 
 - Use this skill when the user supplies a public URL or `web-search` returns a URL whose full content is needed.
-- Use it when a search-result snippet is insufficient to support the answer.
+- Use it when a search-result snippet is insufficient to support the answer, or when an authorized browser workflow needs a page-extraction handoff.
 
 ## Routing and Access
 
@@ -22,7 +22,7 @@ Choose by access requirements rather than a fixed fallback ladder:
 
 - Public static pages: use an available built-in reader or direct HTTP fetch; extract with an already-installed suitable library. A third-party reader may be used for public pages within the call budget.
 - Interactive, authenticated, or institution-authorized pages: use an authorized local browser session when available. A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
-- If a browser session is already usable, reuse it. See [local browser access](references/local-browser.md) only when local browser/CDP connection or download handling is needed. Do not prescribe a new MCP installation when existing local capabilities suffice.
+- Delegate local-browser connection, authenticated interaction, database search, and browser downloads to `../edge-browser-research/SKILL.md`. Resume here only for page extraction and provenance; do not restart routing. Read [local browser mechanics](references/local-browser.md) only when download implementation details are needed.
 
 Example static extraction command:
 
@@ -32,9 +32,13 @@ python -m trafilatura -u "$URL" --markdown
 
 ## Workflow
 
+After obtaining a source file, return its download handoff or continue to ingestion as required; page-extraction steps apply to HTML pages, not binary files.
+
+Reuse page content already supplied by the browser or another reader. Delegate only a missing access/interaction step; do not send an acquired page back through the browser workflow.
+
 1. Inspect the response content type, final URL, and size before processing the body when the selected tool exposes that information.
 2. If the resource is a PDF, save it under `.agents-work/<task-id>/downloads/` and register it in the task index. For reading or extraction, apply `document-ingest` in immediate or persistent mode as needed. For download verification, validate the response and file format without claiming its full contents have been read. Retain user-requested downloads.
-   For CAJ/KDH or other source formats, preserve the actual extension and report supported download and extraction capabilities separately. Set the download destination before triggering the action, keep the controlling session alive through completion, and verify the real saved path. Use a short filename on Windows when source titles would exceed path limits; never overwrite an existing file silently.
+   For CAJ/KDH or other source formats, preserve the actual format and report download and extraction capabilities separately. Browser download mechanics belong to the linked local-browser reference.
 3. Fetch the page and extract its main content while excluding navigation, advertisements, cookie notices, and repetitive footers.
 4. Preserve meaningful headings, lists, tables, links, and code blocks.
 5. Capture the title, author, publication date, and site name when the page provides them.
@@ -45,7 +49,7 @@ python -m trafilatura -u "$URL" --markdown
 
 - When page content or evidence must be persisted, write it to `.agents-work/<task-id>/web/<source-id>.md` at the workspace root and register it in the task's `index.md`.
 - Include the original URL, final URL, retrieval time, available publication metadata, selected quotations, and extracted content in the Markdown file.
-- Store notes and extracted evidence as Markdown. Downloaded source documents and necessary binary intermediates belong in the task `downloads/` directory under the shared `research-browser` contract; do not persist raw response dumps or authentication data.
+- Store notes and extracted evidence as Markdown. Downloaded sources belong in `downloads/` and necessary local processing files in `intermediates/` under the shared `research-browser` contract; do not persist raw response dumps or authentication data.
 - If a tool requires operating-system temporary storage, move retained downloads into the task `downloads/` directory after processing. Remove only disposable temporary copies after successful processing.
 - Store OCR text, relay-model observations, and any relay failure report for relevant page images in the corresponding Markdown evidence file or in a linked file under `.agents-work/<task-id>/images/`.
 
@@ -76,7 +80,7 @@ For an internal extraction handoff, use this structure. For a download-only task
 - Preserve the source wording exactly inside `quotes`.
 - Use `null` when the author or publication date is unavailable, and do not infer missing metadata.
 - Distinguish the publication date from modification, retrieval, and copyright dates.
-- Return the HTTP status and a concise explanation when access is blocked or paywalled.
+- Return the observed HTTP status and a concise explanation when access is blocked or paywalled; use `null` if the browser does not expose a status. Sanitize both original and final URLs before handoff or persistence.
 - Infer institutional access from the actual page/session state; infer download success from a completed file and format checks. A homepage logo, download button, or successful configuration call alone is insufficient. Avoid logging token-bearing links; use sanitized public identifiers such as a DOI or article ID for durable provenance.
 
 ## Failure and Security

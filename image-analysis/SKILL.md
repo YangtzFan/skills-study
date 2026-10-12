@@ -14,7 +14,7 @@ Use local OCR, when available, as an independent text baseline. Host-provided vi
 ## Inputs
 
 - `image_source`: A local image path, a temporary rendered document page, or a public image URL.
-- `task_id`: The active task identifier from `research-browser`.
+- `task_id`: The shared active task identifier when artifacts are needed; omit for an immediate answer without persistence.
 - `provenance`: The source document, page, slide, section, or URL associated with the image.
 - `relay_config`: The configured relay endpoint, credential reference, protocol, and ordered list of image-capable model identifiers.
 

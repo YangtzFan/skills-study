@@ -14,7 +14,7 @@ description: Search the public web and return ranked candidate sources with stru
 
 - Apply `web-reader` when the task is to read a specific URL.
 - Apply `document-ingest` when the task needs local document extraction or document-grounded evidence. Ordinary engineering-file review uses direct file reads.
-- Use browser automation for pages that require login or interactive rendering when that capability is available.
+- For searching an institution-authorized database through Edge/Chromium, hand off to `../edge-browser-research/SKILL.md`; this skill discovers public-web candidates. Interactive page reading belongs to `web-reader`.
 
 ## Search Providers
 

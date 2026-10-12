@@ -1,179 +1,93 @@
 # skills-study
 
-`skills-study` 是一组面向支持 Agent Skills 规范的编码代理（Pi、Codex CLI 等）的技能，主要用于研究任务路由、网页检索、本地文档处理、证据问答以及图片分析。
+面向研究任务的一组 Agent Skills：公开网络检索、机构认证浏览器访问、本地文档处理、证据问答和图片分析。技能是否自动发现、如何注册及何时重载，由宿主代理决定；安装目录本身不保证启用。
 
-本仓库既可以**全局安装**，作为所有工作区通用的技能包；也可以作为 **Git 子模块**挂载到某个仓库，只在该仓库内生效。
+## 技能与职责
 
-所有技能之间的引用都使用相对于技能目录的路径，工件写入当前工作区，因此安装路径和安装方式都不需要修改仓库内容。
-
-## 技能列表
-
-| 技能 | 作用 |
+| 技能 | 职责 |
 | --- | --- |
-| `research-browser` | 统一入口，负责判断任务类型、选择其他技能并执行工件存储约束。 |
-| `critical-reasoning` | 检查错误前提、证据强度、不确定性、风险和方案权衡。 |
-| `web-search` | 搜索公开网络并返回经过排序的候选来源。 |
-| `web-reader` | 读取指定网页，提取正文、元数据和可引用原文。 |
-| `edge-browser-research` | 使用本地 Edge 调试会话进行机构认证网页检索、论文下载与文件验证。 |
-| `document-ingest` | 将本地文档转换为带来源定位信息的 Markdown 工件。 |
-| `document-qa` | 基于已处理的本地文档回答问题并提供精确证据。 |
-| `image-analysis` | 结合本地 OCR 与经授权的中转站视觉模型分析图片。 |
+| [critical-reasoning](critical-reasoning/SKILL.md) | 每个请求的前提、证据、不确定性与回答质量检查。 |
+| [research-browser](research-browser/SKILL.md) | 研究路由、跨来源综合、工件与外部调用预算的唯一规则来源。 |
+| [web-search](web-search/SKILL.md) | 公开网络发现候选来源，不把搜索摘要当成正文证据。 |
+| [web-reader](web-reader/SKILL.md) | 指定网页的正文、元数据、原文引用和来源交接。 |
+| [edge-browser-research](edge-browser-research/SKILL.md) | 本地 Edge/Chromium 会话的认证交互、数据库检索与论文下载验证。 |
+| [document-ingest](document-ingest/SKILL.md) | 文档抽取、结构与定位信息、即时或持久化交接。 |
+| [document-qa](document-qa/SKILL.md) | 基于抽取结果检索、回答、引用，并核对覆盖范围。 |
+| [image-analysis](image-analysis/SKILL.md) | 图片证据的 OCR、宿主视觉或经授权的中转模型分析。 |
 
-## 路由关系
+`.system/` 中的宿主技能提供技能创建/安装、官方产品文档、图片生成等能力，不属于上述研究流水线。图片生成制作素材，图片分析解释证据；普通技能文件审查不因提及 Codex 而要求在线产品文档检索。
+
+## 路由与交接
+
+[AGENTS.md](AGENTS.md) 是全局轻量入口：所有请求应用 `critical-reasoning`；研究、文档证据、图片证据和知识库维护才加载 `research-browser`。代码、配置、提示词和技能审查直接读取文件；已有证据足够的后续问题不重复检索或抽取。
 
 ```text
-AGENTS.md
-`-- research-browser
-    |-- critical-reasoning
-    |-- web-search
-    |   `-- web-reader
-    |       `-- image-analysis
-    `-- document-ingest
-        |-- image-analysis
-        `-- document-qa
+AGENTS.md -> critical-reasoning（所有请求）
+         -> research-browser（需要研究或证据处理时）
+              公开发现：web-search -> web-reader
+              机构数据库：edge-browser-research -> 候选/页面证据/下载记录
+              页面正文：web-reader -> 必要时 image-analysis
+              文档问答：document-ingest -> document-qa
+              独立图片：image-analysis
+              混合来源：research-browser 综合各项证据
 ```
 
-`critical-reasoning` 对所有请求生效。其他技能只在任务需要对应能力时加载。
+指定 URL 直接读取，只有需要发现额外来源时才搜索。机构数据库通过本地浏览器检索；需要网页正文时交给 `web-reader`，需要论文内容时交给 `document-ingest` 和 `document-qa`。仅验证下载无需全文抽取。所有交接延续任务 ID、预算与已有证据；回读共享规则不重新启动路由。
 
-路由按任务意图选择：代码、配置、提示词和技能审查直接读取文件；指定 URL 直接交给 `web-reader`，仅在需要发现额外来源时搜索；独立图片直接交给 `image-analysis`，不要求先生成 `doc_id`。显式加入知识库的请求优先走知识库维护流程。
+文档一次性问答默认 `immediate`：内容、定位与覆盖限制在内存中交接，工件路径为 `null`。需要复用时使用 `persistent`，生成 `content.md`、`chunks.md`、`metadata.md`。内部结构化交接不要求最终回复输出 JSON。
 
-文档处理有两种模式：一次性问答默认使用 `immediate`，在内存中交接抽取内容、定位信息和覆盖限制，产物路径为 `null`；需要复用的结果使用 `persistent`，写入三份 Markdown 工件并登记索引。知识库始终使用持久化模式。`document-qa` 同时支持即时交接和已有工件。
+## 安装与启用
 
-所有子技能共用 `research-browser` 的外部调用预算：默认每个逻辑操作最多 3 次请求、每个任务最多 20 次；普通请求超时 30 秒，源文件下载最长 120 秒，外部工作累计时限 300 秒（不计人工登录、审批等待、本地处理及用户轮次之间的时间）。本地页面检查和不触发外部请求的 CDP 操作不计调用次数。重试、改写查询、能力探测和切换供应商都消耗同一预算；认证失败不重复使用相同凭据重试。费用遵循用户已授权额度，不自动增加付费探测或切换到更贵的供应商。用户可明确指定其他预算。
+将各技能目录放入宿主支持的技能位置，或将仓库挂载为项目子模块并按宿主文档注册。不要覆盖已有技能目录，也不要假设所有宿主支持相同的扫描路径、信任机制、设置字段或 `/skill:`、`/reload` 命令。
 
-## 安装
-
-### 全局安装（推荐）
-
-把仓库克隆到 Agent Skills 的全局目录：
-
-```bash
-git clone git@github.com:YangtzFan/skills-study.git ~/.agents/skills
-```
-
-Pi 会自动发现 `~/.agents/skills/` 下的全部技能，不需要额外配置技能路径。用户级指令正文保存在本仓库的 [`AGENTS.md`](AGENTS.md) 中；在 Pi 的用户级指令文件 `~/.pi/agent/AGENTS.md` 中保留一个轻量路由器：
+全局或项目指令可使用以下路由模板；将占位符替换为实际路径：
 
 ```markdown
-Before handling any request, read and follow `@~/.agents/skills/AGENTS.md`.
+Before handling any request, read and follow <pack-root>/AGENTS.md.
+Resolve relative paths in that file against <pack-root>/.
 ```
 
-这里的 `@` 是给模型的路径提示，不是 Pi 的自动文件包含语法；路由文件必须明确要求模型读取并遵循目标文件。该文件对所有工作目录生效，因此全局安装的技能包和质量指令会自动参与每一个会话。修改后运行 `/reload`，让当前会话重新加载用户级指令。
+例如当前 Windows 安装的入口是 `C:/Users/zhanghang/.codex/skills/AGENTS.md`。这只是本机示例，技能内部保持相对路径。`AGENTS.md` 不是技能，不会仅因存在而自动注册；必须由宿主上下文或明确路由指令加载。Git 子模块也只完成获取与版本登记，不保证技能发现。
 
-**技术边界：** `AGENTS.md` 是全局上下文文件，不是 `SKILL.md`，不会被 skill 扫描器注册成 `/skill:AGENTS`。它通过 Pi 的用户级 `AGENTS.md` 路由进入上下文；如果技能仓库被移动、目标文件被删除或路由指令未被模型执行，质量指令就不会生效。因此应把 `AGENTS.md` 与技能文件一起纳入版本控制，并保留原路由文件。
+启用后检查宿主实际列出的技能和加载诊断，并确认入口文件可读。若需新增安装配置，按对应宿主的当前官方文档操作；本 README 不把某个宿主的发现行为推广到其他宿主。
 
-### 项目内子模块
+## 工件与知识库
 
-只需要在单个仓库中生效时，把本仓库作为子模块挂载：
-
-```bash
-git submodule add git@github.com:YangtzFan/skills-study.git skills-study
-```
-
-`git submodule add` 会同时完成克隆和登记，不需要再执行 `submodule update --init`（本仓库没有嵌套子模块）。子模块可以挂载到任意路径和任意目录名，因为技能内部引用全部相对于技能目录解析。
-
-与普通子模块不同，挂载后的技能包**不会被自动发现**：代理只扫描 `.pi/skills/`、`.pi/extensions/` 等项目目录，以及 `.agents/skills/`（从工作目录向上找到仓库根）。`skills-study/web-search/SKILL.md` 不属于其中任何一个，所以需要下面两种方式之一。
-
-**方式一：AGENTS.md 路由**（不需要项目信任）
-
-```markdown
-Before handling any request in this repository, read and follow [skills-study/research-browser/SKILL.md](skills-study/research-browser/SKILL.md).
-```
-
-模型把 `AGENTS.md` 当作上下文读入，再按其中的相对路径读取技能文件。实测项目未被信任时该文件依然加载。代价是技能不会注册成 `/skill:<name>` 命令，效果完全依赖模型遵守这条指令。
-
-**方式二：显式注册**（需要项目信任，会注册 `/skill:<name>`）
-
-在项目 `.pi/settings.json` 中登记挂载目录：
-
-```json
-{
-  "skills": ["../skills-study"]
-}
-```
-
-指向目录会递归注册其中全部 `SKILL.md`。注意项目设置里的路径**相对于 `.pi/` 解析**，所以要写 `../skills-study` 而不是 `skills-study`，也可以使用绝对路径或 `~` 开头的路径。`.pi/settings.json` 属于受项目信任保护的资源，未授予信任时整个文件被忽略，技能也就不会注册。
-
-## 路径约定
-
-下载的论文、图片等源文件保存在当前工作区 `.agents-work/<task-id>/downloads/`，必要处理文件保存在 `intermediates/`；研究记录、提取内容与索引仍采用 UTF-8 Markdown。用户提供的原件保持原位只读。工件规则不改变应用代码、技能实现文件或产品素材的目标位置。
-
-已登录浏览器访问和下载的具体说明见 [`web-reader/references/local-browser.md`](web-reader/references/local-browser.md)。下载时保持控制会话直至完成，并检查真实落盘位置；不要仅凭首页机构名称判断下载权限。
-
-- 跨技能引用使用相对于技能目录的路径，例如 `../web-search/SKILL.md` 指向同级的 `web-search` 技能。
-- 技能包根目录是 `research-browser/SKILL.md` 所在目录的上一级目录。
-- 新增或修改技能时不要写死绝对路径，也不要假设技能包的目录名。
-
-## 工件目录
-
-需要持久化的证据、抽取结果和中间工件统一写入当前工作区的任务目录：
+完整约束以 [research-browser 的 Work Directory Contract、Project Knowledge Base 和 Shared External Call Budget](research-browser/SKILL.md) 为准；下列为布局说明，不另设规则。
 
 ```text
-<workspace>/.agents-work/<task-id>/
+<workspace>/.agents-work/
+├── <YYYY-MM-DD-task-slug>/
+│   ├── index.md           # 来源、用途、路径、状态
+│   ├── downloads/         # 下载的 PDF、CAJ/KDH、图片等原始来源
+│   ├── intermediates/     # 必要的渲染页、裁剪、处理缓存等
+│   └── .../*.md           # 抽取正文、引用、研究记录
+└── knowledge/
+    ├── index.md
+    └── documents/<doc_id>/
+        ├── content.md
+        ├── chunks.md
+        └── metadata.md
 ```
 
-`<workspace>` 是当前工作目录。该目录遵循以下约束：
+工作区为任务的当前工作目录，任务内复用同一目录。证据记录与索引使用 UTF-8 Markdown；原始下载和必要处理文件分别是 `downloads/`、`intermediates/` 下的明确例外。用户原件保持原位只读。应用代码、技能实现和用户指定的产品素材遵循各自目标位置。
 
-- 只允许持久化 UTF-8 Markdown 文件。
-- 每个任务使用独立的 `<task-id>` 目录，并通过 `index.md` 登记工件来源、用途和相对路径。
-- `.agents-work/knowledge/` 是保留目录名，用于跨任务的项目知识库（见下一节），不会与 `<task-id>` 冲突，因为任务目录名始终以日期开头。
-- JSON、HTML、PDF、图片、数据库和其他非 Markdown 文件不得持久化到该目录。
-- 工具必须使用非 Markdown 文件时，应将其放入操作系统临时目录，并在完成 Markdown 转换后清理。
-- 用户提供的源文件保持原位且只读。
-- 不要把工件写进技能包目录，以保证技能包可以随时更新或重新克隆而不丢失证据。
+不创建无用途的目录或占位文件，不保存凭据、浏览器配置档、认证参数或原始服务响应。宿主项目可在 `.gitignore` 中加入 `.agents-work/`；不自动修改用户忽略规则。
 
-工件位于宿主项目内，建议在宿主项目的 `.gitignore` 中添加：
+知识库仅属于当前工作区，没有全局知识库。用户明确要求新增或更新背景资料时才入库；相关研究/文档任务读取索引，索引未变则复用，普通工程任务无需读取。`doc_id` 来自内容哈希，源文件改变后生成新 ID，并登记替代关系。知识库不是普遍真理，冲突保留来源和时效。
 
-```gitignore
-.agents-work/
-```
+## 浏览器、预算与隐私
 
-## 项目知识库
+本地认证访问流程见 [Edge 技能](edge-browser-research/SKILL.md)，下载机制与现有 Python helper 接口见 [浏览器参考](web-reader/references/local-browser.md)。远程读取器不继承校园 IP、浏览器登录或 v2rayN 路由；机构标识、文件下载、格式验证和全文可读性分别核验。
 
-全局安装的技能包对所有项目共享，但背景资料通常只对某个项目有意义，因此每个工作区可以有自己的知识库：
+网络检索、导航、下载、中转分析和远程检索共用一个任务预算，重试与供应商切换不重置。默认阈值、超时、计数方式和停止条件只在 `research-browser` 中维护。本地 DOM 检查和文件处理不消耗外部调用次数；费用遵循已有授权。
 
-```text
-<workspace>/.agents-work/knowledge/
-├── index.md                     # 登记每个文档的 doc_id、原始路径、主题、摘要、入库时间
-└── documents/<doc_id>/
-    ├── content.md
-    ├── chunks.md
-    └── metadata.md
-```
+本地文档、私有/认证图片向第三方传输须获得明确授权；读取文件或已有密钥不等于上传许可。图片分析保留 OCR、宿主视觉与中转结果的来源区别；配置、能力和错误处理由 `image-analysis` 维护。用户在浏览器内完成密码、MFA 和 CAPTCHA，不导出认证会话。
 
-在该项目的工作区里直接提出请求即可：
+## 维护与验证
 
-- `把 docs/architecture.pdf 加入本项目知识库`
-- `把 ~/specs/api-v3.docx 和 ./manual/ 目录下的文档都加入知识库`
-- `列出本项目知识库`
-- `把已过期的 x.pdf 从知识库移除`
-
-处理时走 `document-ingest` 的知识库模式：原始文件保持在原位且只读，知识库只保存 Markdown 派生件，并更新 `index.md`。`doc_id` 取自文件内容的哈希，因此源文件改动后会产生新的 `doc_id`，重新入库即可，不会错误复用旧内容。
-
-之后该项目内的每次任务都会先读取 `knowledge/index.md`，只在相关时加载具体文档，所以背景知识不必反复提供，也不会无条件占用上下文。
-
-知识库始终属于当前工作区，**不存在全局知识库**：全局安装只决定技能文件放在哪里，不会把技能包目录、agent 目录或其他用户级位置变成数据存放处；不同工作区的背景文档互不共享，也不会被提升到共享位置。如果某个工作区没有 `.agents-work/knowledge/`，就视为没有背景文档。
-
-知识库是项目级证据而非普遍真理：当它与更新的权威来源冲突时，应同时报告两者并说明时效，而不是静默取舍。
-
-## 图片分析与隐私
-
-`image-analysis` 在本地 OCR 可用时使用它作为独立基线，并可使用宿主已有的图像理解能力，或在配置和授权均满足时请求中转站中的 `Image 2` 等支持图片输入的模型。OCR 不可用或失败时必须明确报告，不能把视觉模型输出标记为 OCR，也不会自动安装依赖。
-
-中转配置来自当前用户明确提供的设置或宿主指定的配置位置，至少包含 `endpoint`、`protocol`、`credential_ref` 和有图片输入能力依据的有序 `models` 列表；匿名接口需明确标记。凭据引用只能是宿主密钥引用或环境变量名，不能写入字面密钥。没有配置时不扫描无关文件寻找密钥，也不猜测接口。
-
-- 上传本地、私有或需要认证的图片前，必须获得用户明确许可。
-- 不得猜测中转站地址、密钥、协议或模型标识。
-- OCR、宿主视觉能力和中转模型结果必须分别标注来源，不能用模型输出静默覆盖 OCR。
-- 中转站请求失败时，即使 OCR 成功，也必须报告经过脱敏的失败信息。
-- 凭据、认证头、签名 URL 和敏感请求内容不得写入日志或工件。
-
-## 维护约定
-
-- 每个技能位于独立目录中，入口文件固定为 `SKILL.md`。
-- `SKILL.md` 必须包含标准 YAML frontmatter，并至少提供 `name` 和 `description`。
-- 所有 `SKILL.md` 使用英语；中文说明集中在本 README 中。
-- 不要在英文句子中间进行硬换行。
-- 跨技能引用统一使用 `../<skill>/SKILL.md` 形式，不要引入绝对路径或依赖安装目录名。
-- 新增或修改技能后，在技能可被发现的位置启动代理，检查启动诊断是否有加载告警，并确认 `/skill:<name>` 命令可用；同时检查 Markdown 代码围栏、内部路径和工作目录约束。
-
-技能自带的参考材料放在该技能目录内部（例如 `<skill>/references/`），随仓库提交。包根目录不再保留 `references/` 约定，因为按 Agent Skills 规范 `references/` 是单个技能的附属目录，包根目录下的同名目录没有实际用途。
+- 每个技能入口为带 `name`、`description` 的 `SKILL.md`，技能正文用英语；中文说明集中在本 README。
+- 相对路径按包含该引用的文件所在目录解析；AGENTS 的路径按包根目录解析。安装位置改变无需改写跨技能引用。
+- 共享规则维护单一来源，子技能保留能力特有的证据、覆盖与权限边界；详细浏览器机制不复制到多个入口。
+- 修改后检查 frontmatter、实际引用路径、路由场景与 `git diff --check`；脚本行为改变时运行相应测试。结构验证不能证明真实站点权限或模型能力。
+- `.system/` 是宿主管理的技能，更新可能覆盖本地改动；先区分包内协作问题与宿主技能本身的问题。

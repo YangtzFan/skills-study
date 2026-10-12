@@ -16,7 +16,7 @@ Use the user's authorized local browser session for the requested sites. Establi
 
 ## Connect to Edge
 
-If the user already enabled debugging, inspect the loopback endpoint and relevant page first. Do not restart Edge or replace its profile unnecessarily.
+Connect only to a loopback debugging endpoint and inspect only task-relevant tabs. Prefer a dedicated research profile; debugging gives control of the connected browser. If the user already enabled debugging, inspect the endpoint and relevant page first. Do not restart Edge or replace its profile unnecessarily.
 
 If debugging is unavailable, explain that an ordinary running Edge window cannot automatically be controlled just because the user can browse the site. Offer a dedicated research window. On Windows, the user can run the following in PowerShell; the executable path must exist:
 
@@ -37,14 +37,8 @@ The user may verify that `http://127.0.0.1:9222/json/version` opens. The agent s
 
 ## Inspect and research
 
-The existing [CDP helper](../web-reader/scripts/edge_cdp.py) supports `list`, selected-page `inspect`, and `download`. Resolve its path against this skill directory, then run it from the research workspace so artifacts land in that workspace:
+Read the [local browser mechanics reference](../web-reader/references/local-browser.md) for helper commands, download configuration, completion checks, and implementation limits. The shared helper supports only `list`, selected-page `inspect`, and `download`; use current target IDs from the live session.
 
-```text
-python <pack-root>/web-reader/scripts/edge_cdp.py list
-python <pack-root>/web-reader/scripts/edge_cdp.py inspect --target <current-target-id>
-```
-
-- `list` returns sanitized page addresses and IDs; inspect only relevant pages. Target IDs belong to the live session and must not be hardcoded into reusable instructions.
 - Use a native browser tool for navigation, form filling, search submission, and rendered controls when available. Otherwise use local CDP `Target.createTarget`, `Page.navigate`, and `Runtime.evaluate` within the user's authorized task. For approved clicks that open a tab or download, set `userGesture: true`. Wait for the resulting state rather than assuming `.click()` succeeded.
 - The helper does not implement a general search/form automation API. Do not invent nonexistent subcommands. Use an available CDP/browser capability or state the missing capability precisely.
 - Navigate through the actual library entry point, preserving the resulting session and proxy host. Do not substitute an unproxied publisher address when the authorized page uses a library proxy.
@@ -54,37 +48,19 @@ python <pack-root>/web-reader/scripts/edge_cdp.py inspect --target <current-targ
 
 ## Download and verify
 
-Follow the detailed [local browser reference](../web-reader/references/local-browser.md). Create `.agents-work/<task-id>/downloads/` before downloading and register source files in the task `index.md`. Necessary processing files belong in `intermediates/`; evidence notes remain Markdown.
+Use the download procedure in the local browser reference, with the same task ID and budget. Choose the actual clickable control, rather than a containing span. Preserve the actual source format; for the helper, `--format caj` checks CAJ/KDH markers.
 
-For a site's real download link or button:
-
-```text
-python <pack-root>/web-reader/scripts/edge_cdp.py download --target <current-target-id> --selector <download-css-selector> --task-id <YYYY-MM-DD-task-slug> --name <short-unique-name.pdf> --format pdf
-```
-
-Use `--format caj` and a `.caj` filename for CAJ/KDH. Select the actual clickable link; a containing span with matching text may not trigger the download.
-
-- Keep the browser-level CDP session alive from `Browser.setDownloadBehavior` through `Browser.downloadProgress` completion. Disconnecting immediately after configuring the destination can restore Edge's default Downloads directory.
-- Run one download at a time in a dedicated research browser. `target=_blank` may hide the opener through `noopener`; the helper associates events by relevant frames, related popups, or source/link origin. With unrelated concurrent downloads or cross-origin redirects, use a browser tool that can trace the full navigation.
 - If the publisher opens a PDF preview rather than downloading, inspect the preview's iframe/embed source. Use the normal download control, or a same-session browser retrieval when the user authorized the file. Validate the response before writing; do not send its authenticated URL to a remote reader or silently export browser cookies into a separate HTTP client.
-- Check completion state, real saved path, actual byte count, and file signature. For PDF format verification, check `%PDF-` and an EOF marker; for CAJ/KDH, retain the actual format. Record a hash when useful. These checks do not prove a parser can read the full document.
-- Preserve short deterministic filenames on Windows and refuse unintended overwrites. When checking repeated operations, compare hashes; do not remove files merely because their names are similar.
-- If a file landed in the default Downloads folder, identify the exact file created by this task, migrate it into the task directory subject to filesystem permissions, and update the index. Do not sweep or delete unrelated user downloads.
 - Report per-database results separately. One successful article does not prove access to every journal, year, degree thesis, or file format. Apply [document-ingest](../document-ingest/SKILL.md) only when content extraction is needed; a download test need not ingest the full paper.
 
 ## Stop conditions and handoff
 
 - Follow the shared external-call and spending budget. Local DOM checks consume no external attempts; navigation and file retrieval do. Do not blindly repeat a click when a login page, preview, challenge, cancellation, or timeout explains the missing download.
 - Authentication failures require a changed/verified session before retrying. Let the user complete challenges; do not automate CAPTCHA solving or bypass subscription restrictions.
-- Browser access, source-file download, format validation, and content extraction may have different success states. Return the actual completed work, saved file/record link, and remaining limitation in the user's language.
+- Return a sanitized handoff appropriate to the task: discovery candidates (title, stable URL/ID, relevance); page evidence (URL, exact passages and anchors, observed access/coverage); or downloads (saved path, source ID/URL, completion, size/hash, format checks). Do not invent HTTP status or extraction results.
+- For page extraction, continue with `../web-reader/SKILL.md` using the same browser evidence. For source-document content, continue with `../document-ingest/SKILL.md`, then `document-qa` for document questions. An access/download-only task ends with verification. Return actual results and remaining limitations in the user's language.
 - If debugging was started only for this task, offer to close the dedicated research window when the user no longer needs it. Do not terminate unrelated Edge processes or interrupt a session the user wants to keep using.
 
-## Validation and known coverage
+## Validation
 
-The shared helper has offline regression checks:
-
-```text
-python -B <pack-root>/web-reader/scripts/test_edge_cdp.py
-```
-
-In the observed campus-library workflow, IEEE, Wanfang, and VIP delivered PDFs, and CNKI delivered CAJ/KDH. The new helper also completed an actual Wanfang PDF download into the task directory. These observations validate those tested paths, not universal database entitlement, CAJ extraction support, or every local HTTP/browser policy. No passwords, cookies, account identifiers, live target IDs, or authentication-bearing URLs belong in this skill.
+Helper commands and offline regression checks are maintained in the local browser reference. Validate modified automation with relevant offline checks; live site tests require the task's authorization and budget. A tested article verifies only that session, article, and file format, not every database entitlement or parser.
