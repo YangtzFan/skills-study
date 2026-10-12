@@ -43,13 +43,15 @@ description: Answer questions from previously ingested local documents with prec
 ## Answer Rules
 
 - Base document claims only on retrieved or fully read document content.
-- Support each material factual claim with a verbatim quote and the most precise available provenance.
+- Support material document claims with precise provenance and short verbatim evidence. Group related claims under a shared citation when clear; summaries need representative quotations, not a repeated quotation for every sentence. Label derived calculations or synthesis and show the source values or passages that support them.
 - Use `(doc_id, p<page>)` for paginated sources and an explicit section, sheet, or slide label for non-paginated sources.
 - If partial retrieval does not answer a question, state `Not found in the inspected evidence from <doc_id>; document-wide absence is unverified.` and describe the inspected scope. Use `Not found in <doc_id>.` only after the complete relevant content and extraction coverage have been checked. Do not fill either gap with outside knowledge.
 - If document passages conflict, present both passages with their provenance.
 - Never invent page numbers, locations, or quotations.
 
 ## Output
+
+Use the user's requested language and format. The template below is for a detailed evidence handoff; simple answers need only the answer, precise citations, and material limitations. Keep retrieval counters in the handoff or artifact when useful rather than adding them to every chat reply.
 
 ```markdown
 ## Answer
@@ -79,7 +81,7 @@ Omit the `Not Found` section when every part of the question is answered.
 
 - Read document artifacts from `.agents-work/<task-id>/documents/<doc_id>/` for the current task, and from `.agents-work/knowledge/documents/<doc_id>/` for project background documents, unless the user explicitly provides another existing ingestion location.
 - If retrieval notes, evidence selections, or draft synthesis must be persisted, write them as Markdown files under the active `.agents-work/<task-id>/` directory.
-- Do not persist indexes, embeddings, JSON, or other non-Markdown intermediate files in the work directory. Use an ephemeral system temporary location when a tool requires such data.
+- Keep evidence notes and registries as Markdown. Necessary local retrieval caches or other non-Markdown processing files follow the shared `intermediates/` exception; default to ephemeral caches unless persistence is needed. Do not persist raw provider responses or sensitive authentication data. Remote embeddings/storage still require the authorization described above.
 
 ## Failure Handling
 

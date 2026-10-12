@@ -39,6 +39,7 @@ Before drafting:
 ## Output
 
 - Prioritize truth, decision relevance, and clarity over reassurance or exhaustive coverage.
+- Separate observed success from untested capability: a download is not a parsed document, a configured connector is not a verified connection, and a passing structural validator is not a behavioral guarantee. Do not expand verification into unrelated work once the user's outcome is established.
 - Lead with the answer unless the user explicitly requests a different structure.
 - Use structure only when it improves scanning. Keep simple answers simple and detailed answers organized around the user's question.
 - If using project knowledge-base material, treat it as project-specific evidence; mention staleness only when it could affect the answer.

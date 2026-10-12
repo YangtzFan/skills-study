@@ -10,10 +10,12 @@ description: Route every request to the appropriate reasoning, web-research, loc
 This is the mandatory router for every request, in any workspace.
 
 1. Read and apply `../critical-reasoning/SKILL.md` before evaluating the request.
-2. If `.agents-work/knowledge/index.md` exists at the workspace root, read it to learn which background documents this project provides.
+2. For research or document questions, read `.agents-work/knowledge/index.md` when it exists and may be relevant. Reuse an already-read index until it changes; ordinary engineering or conversational tasks need no knowledge-base lookup.
 3. Classify the request into exactly one case below.
 4. Read only the additional skill files required by that case.
 5. Preserve the user's scope and do not perform research or create artifacts when the task does not require them.
+
+Use previously loaded skill text when current; the router is a decision procedure, not a reason to reread every file on every turn. Download-only or access-testing requests use the web workflow without mandatory full-document extraction.
 
 Use `web-search` and `web-reader` for external sources, use `document-ingest` and `document-qa` for local documents, and use `image-analysis` for image evidence that needs OCR or an external vision model.
 
@@ -38,10 +40,10 @@ A global installation changes only where the skill files live. It never turns th
 - Resolve `.agents-work/` against the workspace root, which is the current working directory. The resulting work directory is `<workspace>/.agents-work/<task-id>/`.
 - Use the work directory as the only persistent location for downloaded evidence, extracted evidence, research notes, and intermediate artifacts created by these skills.
 - Derive `<task-id>` from the date and a short task slug, and reuse the same directory throughout one task.
-- Persist every artifact in this directory as a UTF-8 Markdown file with a `.md` extension. Structured data may appear inside Markdown tables, YAML frontmatter, or fenced code blocks.
-- Do not persist JSON, JSONL, HTML, XML, CSV, database, image, PDF, or other non-Markdown files in the work directory.
+- Persist research notes, extracted content, metadata, and registries as UTF-8 Markdown. Store task-downloaded sources under `downloads/` and necessary local processing files under `intermediates/`; these are explicit exceptions to the Markdown-only evidence rule. This contract does not relocate application code, skill implementation files, or user-requested product assets.
+- Do not persist raw API responses, cookies, credentials, browser profiles, or debug dumps in research artifacts. Downloaded PDFs, CAJ files, images, and other source formats may be retained under `downloads/`. A successful download does not establish that a format is readable or extractable.
 - Keep user-provided source files at their original locations and treat them as read-only.
-- When a tool requires a binary or non-Markdown download, use an operating-system temporary directory, extract the required content, write the durable evidence as Markdown under the work directory, and remove the temporary file after successful conversion.
+- Before downloading, create the task `downloads/` directory and configure the browser or downloader to save there. Register each source file in the task `index.md` with its relative path, sanitized source URL, purpose, download/verification status, and size or hash when available. Keep requested downloads; remove disposable intermediates only after successful processing and when retention is unnecessary. Use operating-system temporary storage only when a tool requires it, then move retained downloads into the task directory. Download verification alone does not require full document ingestion.
 - Create artifacts only when they are needed for the task. Do not create placeholder task directories or empty files.
 - Record each created artifact in `.agents-work/<task-id>/index.md` with its purpose, source, and relative path.
 - Never write artifacts into the skill pack directory itself. Keep the installation clean so it can be updated or re-cloned without losing evidence.
@@ -55,7 +57,7 @@ A workspace may keep durable background documents that apply to every task in th
 - Its layout mirrors the document artifacts of a task:
   - `.agents-work/knowledge/index.md` registers every document with its `doc_id`, original source path, topic, summary, and ingestion time.
   - `.agents-work/knowledge/documents/<doc_id>/` holds the derived `content.md`, `chunks.md`, and `metadata.md`.
-- Read `index.md` at the start of a task when it exists, so background documents can inform the answer even when the user does not name them. Load the documents themselves only when they are relevant; do not load the whole knowledge base by default.
+- Read `index.md` at the start of a relevant research/document task when it exists, so background documents can inform the answer even when the user does not name them. Reuse an unchanged index. Load documents only when relevant; do not load the whole knowledge base by default.
 - Never create or extend the knowledge base implicitly. Create it only when the user asks to add or update a background document, and never upload a source to a third-party service without consent.
 - Never promote a project knowledge base document to a shared or global location. Background documents belong to the workspace that produced them and are not reused across workspaces.
 - Original source files stay at their own locations and remain read-only. The knowledge base holds only Markdown derivatives.
@@ -66,11 +68,12 @@ A workspace may keep durable background documents that apply to every task in th
 Apply this policy to all network calls made by these skills, including search, page fetches, browser navigation, relay capability checks, image analysis, and authorized remote retrieval. Read this section when a child skill is invoked directly; do not reset counters when changing skills or providers.
 
 - A logical operation is one focused source-discovery question, one page fetch, one image analysis, or one remote retrieval pass. Capability probes and fallback providers belong to that same operation; renaming a query or switching skills does not create a new budget.
-- Unless the user specifies another budget, allow at most 3 external attempts per logical operation and 20 across the active task, with a 30-second timeout per attempt and a 300-second elapsed deadline for the external workflow. Apply tighter provider or host limits when present. Batch calls count once per request; concurrent calls must reserve slots before starting.
+- Unless the user specifies another budget, allow at most 3 external attempts per logical operation and 20 across the active task. Use a 30-second timeout for ordinary fetch/search calls and up to 120 seconds for a source-file download; tighter provider/host limits take precedence. Allow 300 seconds of active external-work time, excluding human login/verification waits, permission waits, local processing, and time between user turns. Batch calls count once per request; concurrent calls must reserve slots before starting. Local DOM inspection, local CDP commands that cause no external request, and filesystem checks consume no external attempts.
 - Track attempts, elapsed time, known charges, and the remaining limits in memory. Record a sanitized summary only when task artifacts are already needed. Capability probes, retries, provider switches, extraction fallbacks that refetch a page, and rewritten queries all consume this shared budget.
 - Use an existing user-approved spending cap or provider allowance; do not invent a monetary allowance. Do not add paid probes or switch to a more expensive provider without spending authorization. When prices are unknown, report that limitation and avoid optional paid fallbacks.
 - Retry only transient network failures, timeouts, rate limits, and HTTP 5xx errors. Allow at most 2 retries within the 3-attempt operation cap; use bounded backoff or Retry-After only when it fits the remaining deadline.
 - Authentication and authorization failures stop retries with the same credentials. Invalid input and unsupported models require correction or a known compatible alternative, not repetition. A different provider or model still consumes the same operation budget and requires applicable data-transfer and spending authorization.
+- An authorized interactive login is a change of authentication state, not a repeated request with failed credentials. Let the user complete passwords, MFA, and CAPTCHA locally; resume when completion is verified. A host-required network escalation is not a provider retry, though the failed and repeated network requests still count as attempts. Never route around an execution-permission denial.
 - Query rewriting addresses inadequate results, not transport failures. Allow at most one meaningful rewrite for a logical search operation within its remaining attempt budget. Do not nest query rewrites, provider fallback loops, and network retry loops.
 - Stop when any call, time, or approved spending limit is reached. Return available evidence and report the stopping reason. A larger budget requires user authorization; do not silently reset limits.
 
@@ -92,7 +95,7 @@ Use this case when the user asks for current or recent information, requests int
 2. When discovery is needed, select the most relevant and authoritative results, usually three to five URLs, within the shared external call budget.
 3. Read and apply `../web-reader/SKILL.md` to the selected URLs.
 4. Cross-check consequential claims with an independent source when practical. If only one authoritative primary source exists, identify that limitation.
-5. Answer with inline links and a `Sources` section.
+5. Cite supporting sources with descriptive inline links. Add a separate source list only when it improves navigation or the user requests it; do not repeat the same references mechanically. Access/download tests should link the saved file or verification record and state the observed status.
 
 Handle inadequate results, transport failures, and provider fallbacks under the Shared External Call Budget. If available methods or the budget are exhausted, return available evidence and explain the limitation; do not start another retry loop.
 
@@ -114,7 +117,7 @@ Use this case when the request compares a local document with current work, asks
 
 1. Complete the local-document workflow first to establish what the document actually says.
 2. Complete the external-information workflow next to obtain current evidence.
-3. Organize the answer under `From the Document`, `From the Web`, and `Synthesis`.
+3. Keep local evidence, external evidence, and synthesis distinguishable. Use headings only when useful, in the user's language and requested format.
 4. Identify agreements, contradictions, evidence gaps, and relevant differences in publication date or authority.
 5. Do not assume that the newer source is more accurate solely because it is newer.
 
@@ -146,6 +149,6 @@ Use this case when the user asks to add, update, remove, or list the background 
 - Identify whether image-derived evidence came from OCR, host vision, a relay model, or a synthesis of those sources.
 - If an attempted relay request fails, report the failure explicitly even when local OCR succeeds. Do not hide the failure behind an OCR-only result.
 - Cite web evidence with descriptive Markdown links to the source URLs.
-- Include a concise `Sources` section for external research.
+- Use concise source links close to the claims they support; add a source list when useful. Internal tool/handoff schemas do not require exposing JSON in the final answer.
 - State important coverage limitations, unresolved conflicts, and information that could not be verified.
 - Never fabricate source content, citations, publication dates, or document locations.

@@ -10,7 +10,7 @@ description: Convert local source documents into structured Markdown and retriev
 - Use this skill when the task needs extraction or document-grounded evidence from an attached or referenced source document, or when the user explicitly asks to ingest a file into the project knowledge base.
 - Do not invoke ingestion merely because the user supplies a local path. For ordinary review, explanation, debugging, or editing of code, configuration, prompts, or skill definitions, read the files directly and cite file paths and line numbers.
 - TXT and Markdown are source documents only when the task calls for document processing or evidence retrieval; file extension alone does not determine the workflow.
-- Supported formats include PDF, DOCX, XLSX, CSV, PPTX, TXT, Markdown, HTML, EPUB, PNG, and JPEG.
+- Candidate formats include PDF, DOCX, XLSX, CSV, PPTX, TXT, Markdown, HTML, EPUB, PNG, and JPEG; actual support depends on available local parsers. CAJ/KDH downloads require a compatible local reader/converter and must not be treated as PDFs simply by renaming them.
 
 ## Preferred Tools
 
@@ -36,12 +36,13 @@ Use Docling or Unstructured only when a format-specific tool is unavailable or p
 ## Workflow
 
 1. Confirm that the file exists, determine its type from content or reliable metadata, and record its absolute path.
+   Check the file signature and parser result when feasible; an extension or HTTP content type alone is not proof of readability. Record binary-download verification separately from extraction coverage.
 2. Compute `doc_id` as the first 12 hexadecimal characters of the file's SHA-256 digest so the identifier remains stable when the file is moved.
 3. Select the processing mode. Create `.agents-work/<task-id>/documents/<doc_id>/` only in persistent mode, using the knowledge base location for knowledge base maintenance.
 4. Extract text while preserving the source structure. Keep PDF page numbers, DOCX heading levels, spreadsheet sheet names, and PPTX slide numbers.
 5. For a standalone image, a scanned page, or visually significant content such as a diagram or table, read and apply `../image-analysis/SKILL.md`. Attempt local OCR when available; preserve its unavailable or failed status otherwise. Use authorized host vision or an approved relay only under that skill's capability and privacy rules.
 6. Mark OCR-derived chunks with `"ocr": true`. Label model-derived observations as `host_vision` or `relay`, with provider and model identifiers when known; do not invent relay identifiers for host-provided analysis.
-7. In immediate mode, return extracted content, anchors, and coverage limitations in memory with `null` artifact paths. In persistent mode, write `content.md`, `chunks.md`, and `metadata.md`, register them in the task's `index.md` when applicable, and link any image-analysis Markdown. Do not create JSON, JSONL, HTML, plain-text, or binary artifacts in the artifact directory.
+7. In immediate mode, return extracted content, anchors, and coverage limitations in memory with `null` artifact paths. In persistent mode, write `content.md`, `chunks.md`, and `metadata.md`, register them in the task's `index.md` when applicable, and link any image-analysis Markdown. Keep extraction outputs under `documents/<doc_id>/` as Markdown; task-downloaded sources and necessary processing files follow the shared `downloads/` and `intermediates/` exceptions.
 8. When chunking is needed for persistent retrieval or a large immediate handoff, split on structural boundaries before size-based chunking. Target 800 to 1,200 tokens per chunk with approximately 100 tokens of overlap when useful; do not chunk a small one-off extraction unnecessarily.
 
 ## Knowledge Base Mode
@@ -106,7 +107,7 @@ Exact extracted text goes here.
 - Do not upload local file contents to a third-party service without explicit user consent.
 - Do not assume that a relay model alias such as `Image 2` supports image understanding. Confirm the configured model capability or report that it is unsupported.
 - Do not copy a user-provided source file into the work directory; keep it at its original path and persist only Markdown derivatives.
-- If extraction requires a non-Markdown temporary file, place it in the operating system's temporary directory. Return the useful content in the immediate handoff or persist Markdown in persistent mode, and remove the temporary copy after successful extraction.
+- Store task-downloaded sources in `.agents-work/<task-id>/downloads/` and necessary local processing files in `intermediates/`, following the shared `research-browser` contract; register retained files in the task index. User-provided originals stay read-only at their original paths. If a tool requires operating-system temporary storage, remove disposable temporary copies after successful extraction; keep user-requested downloads.
 - Preserve page numbering exactly, including anchors for blank PDF pages.
 - Preserve enough provenance in every chunk to support exact citations later.
 - Do not claim exact page provenance for source formats that do not provide stable pages. Use section, sheet, or slide provenance instead.

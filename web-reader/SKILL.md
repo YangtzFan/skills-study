@@ -1,6 +1,6 @@
 ---
 name: web-reader
-description: Fetch a specified web page and extract its main content, metadata, and verbatim supporting passages. Use after web-search or when the user provides a public URL that needs to be read in full.
+description: Read specified web pages or download source documents, preserving provenance. Use authenticated local browser sessions for interactive or institution-authorized access; use public readers only for public sources.
 ---
 
 # Web Reader
@@ -10,21 +10,19 @@ description: Fetch a specified web page and extract its main content, metadata, 
 - Use this skill when the user supplies a public URL or `web-search` returns a URL whose full content is needed.
 - Use it when a search-result snippet is insufficient to support the answer.
 
-## Do Not Use
+## Routing and Access
 
 - Use browser automation for JavaScript-dependent or interactive pages when that capability is available.
-- Download an HTTP-served PDF and apply `document-ingest` instead of treating it as an HTML page.
+- Save an HTTP-served PDF under the task `downloads/` directory. Apply `document-ingest` when its contents need extraction; download-only verification does not require ingestion.
 - Do not forward private, authenticated, signed, or token-bearing URLs to a third-party reader service.
 
 ## Preferred Tools
 
-Use the first suitable method available in the environment:
+Choose by access requirements rather than a fixed fallback ladder:
 
-1. A built-in web-reading or browser capability.
-2. A reader endpoint such as `https://r.jina.ai/http://example.com` for public pages.
-3. A direct HTTP fetch followed by Trafilatura extraction.
-4. Readability and Beautiful Soup when Trafilatura fails.
-5. Playwright or another browser automation tool for content that requires rendering.
+- Public static pages: use an available built-in reader or direct HTTP fetch; extract with an already-installed suitable library. A third-party reader may be used for public pages within the call budget.
+- Interactive, authenticated, or institution-authorized pages: use an authorized local browser session when available. A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
+- If a browser session is already usable, reuse it. See [local browser access](references/local-browser.md) only when local browser/CDP connection or download handling is needed. Do not prescribe a new MCP installation when existing local capabilities suffice.
 
 Example static extraction command:
 
@@ -35,7 +33,8 @@ python -m trafilatura -u "$URL" --markdown
 ## Workflow
 
 1. Inspect the response content type, final URL, and size before processing the body when the selected tool exposes that information.
-2. If the resource is a PDF, download it to an operating-system temporary directory and apply `document-ingest` in immediate mode for one-off reading or persistent mode when reusable evidence is needed. Return the immediate evidence or persist only Markdown derivatives, and remove the temporary PDF after successful extraction.
+2. If the resource is a PDF, save it under `.agents-work/<task-id>/downloads/` and register it in the task index. For reading or extraction, apply `document-ingest` in immediate or persistent mode as needed. For download verification, validate the response and file format without claiming its full contents have been read. Retain user-requested downloads.
+   For CAJ/KDH or other source formats, preserve the actual extension and report supported download and extraction capabilities separately. Set the download destination before triggering the action, keep the controlling session alive through completion, and verify the real saved path. Use a short filename on Windows when source titles would exceed path limits; never overwrite an existing file silently.
 3. Fetch the page and extract its main content while excluding navigation, advertisements, cookie notices, and repetitive footers.
 4. Preserve meaningful headings, lists, tables, links, and code blocks.
 5. Capture the title, author, publication date, and site name when the page provides them.
@@ -46,13 +45,13 @@ python -m trafilatura -u "$URL" --markdown
 
 - When page content or evidence must be persisted, write it to `.agents-work/<task-id>/web/<source-id>.md` at the workspace root and register it in the task's `index.md`.
 - Include the original URL, final URL, retrieval time, available publication metadata, selected quotations, and extracted content in the Markdown file.
-- Do not save raw HTML, response dumps, PDFs, screenshots, or other non-Markdown files in the work directory.
-- If a non-Markdown download is required for extraction, keep it in an operating-system temporary directory and remove it after the durable Markdown evidence has been written successfully.
+- Store notes and extracted evidence as Markdown. Downloaded source documents and necessary binary intermediates belong in the task `downloads/` directory under the shared `research-browser` contract; do not persist raw response dumps or authentication data.
+- If a tool requires operating-system temporary storage, move retained downloads into the task `downloads/` directory after processing. Remove only disposable temporary copies after successful processing.
 - Store OCR text, relay-model observations, and any relay failure report for relevant page images in the corresponding Markdown evidence file or in a linked file under `.agents-work/<task-id>/images/`.
 
 ## Output
 
-Return JSON with this shape:
+For an internal extraction handoff, use this structure. For a download-only task, return saved path, sanitized source, completion status, byte count, and file-format checks instead; do not invent page content. User-facing replies use natural language unless structured output is requested:
 
 ```json
 {
@@ -78,6 +77,7 @@ Return JSON with this shape:
 - Use `null` when the author or publication date is unavailable, and do not infer missing metadata.
 - Distinguish the publication date from modification, retrieval, and copyright dates.
 - Return the HTTP status and a concise explanation when access is blocked or paywalled.
+- Infer institutional access from the actual page/session state; infer download success from a completed file and format checks. A homepage logo, download button, or successful configuration call alone is insufficient. Avoid logging token-bearing links; use sanitized public identifiers such as a DOI or article ID for durable provenance.
 
 ## Failure and Security
 

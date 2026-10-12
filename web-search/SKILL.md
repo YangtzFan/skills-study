@@ -10,7 +10,7 @@ description: Search the public web and return ranked candidate sources with stru
 - Use this skill when the user explicitly requests a web search or when the answer depends on current external information.
 - Use it to discover candidate URLs before applying `web-reader`.
 
-## Do Not Use
+## Routing Boundaries
 
 - Apply `web-reader` when the task is to read a specific URL.
 - Apply `document-ingest` when the task needs local document extraction or document-grounded evidence. Ordinary engineering-file review uses direct file reads.
@@ -21,6 +21,8 @@ description: Search the public web and return ranked candidate sources with stru
 Use an available search capability or configured provider. Possible providers include Tavily, Exa, Brave Search, SerpAPI, Google Programmable Search, a self-hosted SearXNG instance, and DuckDuckGo.
 
 Never expose provider credentials in commands, output, logs, or generated artifacts.
+
+Discover only capabilities available in the current environment. Prefer a configured usable provider; a list of possible providers is not a reason to probe each one. Do not install packages or read unrelated configuration merely to discover a search endpoint.
 
 ## Query Strategy
 
@@ -40,7 +42,7 @@ Useful filters include `recency`, `site`, language, and result type such as news
 
 ## Output
 
-Return JSON with this shape:
+For an internal handoff, use the following structure. In a user-facing answer, present selected findings and source links in natural language unless JSON is requested. Unknown dates and provider scores are `null`, not invented values:
 
 ```json
 {
@@ -54,7 +56,7 @@ Return JSON with this shape:
       "snippet": "...",
       "source": "example.com",
       "published_date": null,
-      "score": 0.87
+      "score": null
     }
   ],
   "provider": "provider name",

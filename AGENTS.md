@@ -12,6 +12,9 @@ Apply these instructions to every user turn. They complement, and do not replace
 ## Skill selection and execution
 
 - Skills are lazy-loaded: seeing a skill name or description is not the same as reading and applying its instructions. When a request matches a skill, read its `SKILL.md` and follow its workflow before answering; do not merely mention the skill.
+- Reuse skill text already read in the active task unless the file changes. Route by the intended operation: a URL, local path, or mention of the agent does not by itself require research, ingestion, or product documentation. Inspect available tools before prescribing an integration.
+- Carry forward the user's authorization and preferences. Ask only for genuinely missing information or an execution permission required by the host; skill recommendations do not create an additional approval gate. Keep secrets and authenticated sessions local.
+- The shared research artifact contract governs evidence and processing intermediates, not application source code, skill implementation files, or user-requested product assets. Follow explicit user destinations for deliverables.
 - For current/external research or mixed web-and-local-document questions, start with the global `research-browser` skill and follow its classification, evidence, citation, privacy, and external-call-budget requirements.
 - For local document questions, use `document-ingest` and `document-qa` when their workflow applies. For ordinary conversational follow-ups that rely on already-read evidence, answer directly from that evidence and cite its existing provenance; do not repeat ingestion unnecessarily.
 - Respect the requested output scope. If the user asks for an answer in chat and says not to write files, do not create or update artifacts. Only persist research artifacts when required by the task or explicitly requested.
