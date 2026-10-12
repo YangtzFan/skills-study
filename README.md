@@ -14,6 +14,7 @@
 | `critical-reasoning` | 检查错误前提、证据强度、不确定性、风险和方案权衡。 |
 | `web-search` | 搜索公开网络并返回经过排序的候选来源。 |
 | `web-reader` | 读取指定网页，提取正文、元数据和可引用原文。 |
+| `edge-browser-research` | 使用本地 Edge 调试会话进行机构认证网页检索、论文下载与文件验证。 |
 | `document-ingest` | 将本地文档转换为带来源定位信息的 Markdown 工件。 |
 | `document-qa` | 基于已处理的本地文档回答问题并提供精确证据。 |
 | `image-analysis` | 结合本地 OCR 与经授权的中转站视觉模型分析图片。 |
