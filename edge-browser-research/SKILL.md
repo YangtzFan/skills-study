@@ -14,6 +14,12 @@ Use the user's authorized local browser session for the requested sites. Establi
 - This workflow does not authorize unrelated tabs, account changes, proxy changes, credential export, or third-party uploads. The user enters passwords, MFA, and CAPTCHA directly in the browser. Continue after authentication is verified; do not request the same authorization again.
 - A remote reader does not inherit local browser cookies, campus network access, or v2rayN routing. Successful access in Edge does not establish that command-line HTTP traffic takes the same route.
 
+## Separate the profile from task sessions
+
+The global profile below retains browser preferences and login state across projects. Task pages, search progress, and restoration instructions belong to `.agents-work/<task-id>/browser/session.json`, registered in that task's `index.md`. Never copy browser profiles, cookies, passwords, or Chromium `Sessions/` files into the task directory. Separate windows share authentication and storage; they do not isolate accounts.
+
+Before creating, resuming, checkpointing, or closing task windows, read [task browser sessions](references/task-sessions.md). A new task gets a fresh blank window in the shared research profile. Continuing a task restores only that task's safe recorded pages, after checking for its already-open window. Do not infer the active task from whichever tabs happen to be open or from the last browser session.
+
 ## Connect to Edge
 
 Connect only to a loopback debugging endpoint and inspect only task-relevant tabs. Prefer a dedicated research profile; debugging gives control of the connected browser. If the user already enabled debugging, inspect the endpoint and relevant page first. Do not restart Edge or replace its profile unnecessarily.
@@ -25,7 +31,7 @@ Use a persistent dedicated research profile, independent of the current project 
 
 Reuse the selected directory when it exists and create it only when absent. Never use a project-local `.agents-edge-session`, a temporary directory, or the user's ordinary Edge profile for a new research session. These paths are local to each OS/user; do not share one live profile between Windows and Linux or assume credentials can be transferred between them.
 
-First check the existing loopback CDP endpoint (normally `http://127.0.0.1:9222/json/version`). If it is usable and authorized for the task, connect to it without restarting Edge or migrating its active profile. If the fixed profile is already in use but no usable endpoint is available, diagnose that instance; do not launch competing instances with the same profile or remove profile locks. Do not forcibly migrate an existing legacy profile.
+First check the existing loopback CDP endpoint (normally `http://127.0.0.1:9222/json/version`). If it is usable and authorized for the task, connect to it without restarting Edge or migrating its active profile, then select or create the current task's window using the session rules above. Reusing a browser process does not assign its existing pages to the current task. If the fixed profile is already in use but no usable endpoint is available, diagnose that instance; do not launch competing instances with the same profile or remove profile locks. Do not forcibly migrate an existing legacy profile.
 
 If debugging is unavailable, explain that an ordinary running Edge window cannot automatically be controlled just because the user can browse the site. Within the user's authorization, launch a dedicated research window, or provide the appropriate command below when manual launch is needed. Check the endpoint first as above; the executable path must exist.
 
@@ -50,7 +56,7 @@ if (-not (Test-Path -LiteralPath $edgeProfilePath)) {
 if (-not (Test-Path -LiteralPath $edgeProfilePath -PathType Container)) {
     throw 'The research profile path exists but is not a directory.'
 }
-& $edgePath --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --user-data-dir="$edgeProfilePath" 'about:blank'
+& $edgePath --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --user-data-dir="$edgeProfilePath" --new-window 'about:blank'
 ```
 
 Linux (Bash, in the user's graphical desktop session):
@@ -82,11 +88,13 @@ Linux (Bash, in the user's graphical desktop session):
         (umask 077; mkdir -p -- "$edge_profile_path")
     fi
     "$edge_path" --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 \
-        --user-data-dir="$edge_profile_path" 'about:blank'
+        --user-data-dir="$edge_profile_path" --new-window 'about:blank'
 )
 ```
 
 On Linux, use an available graphical session for manual authentication. If none is available, report that limitation or connect to an already authorized reachable loopback session; do not silently switch to headless mode or add `--no-sandbox`. If using Chromium instead of Edge, explicitly identify the substitution and use a separate persistent sibling profile (`chromium-research`); do not open an Edge profile with a different browser.
+
+Do not pass `--restore-last-session`. For the dedicated research profile, check Edge's own startup setting when establishing this workflow; configure it through the normal settings interface to open a new tab rather than resume the previous session. Do not change the ordinary Edge profile or edit live preference/session databases. Explicit `about:blank` and `--new-window` arguments alone do not prove that startup settings, policy, or crash recovery cannot reopen old pages. Verify the actual windows after launch; follow the task-session reference if old pages reappear.
 
 The dedicated profile does not inherit the user's ordinary Edge login state. Reusing it preserves saved browser state, but sites can expire authentication; verify access and let the user complete login, MFA, or CAPTCHA when required. Keep profiles outside research artifacts; never copy their cookies or credentials into `.agents-work/`. Have the user open the library/database entry point and complete authentication in this window when needed. Retain the profile across tasks and browser restarts; do not delete or reset it as task cleanup.
 
@@ -117,8 +125,10 @@ When full text of an external paper is needed, download and verify it in the tas
 - Follow the shared external-call and spending budget. Local DOM checks consume no external attempts; navigation and file retrieval do. Do not blindly repeat a click when a login page, preview, challenge, cancellation, or timeout explains the missing download.
 - Authentication failures require a changed/verified session before retrying. Let the user complete challenges; do not automate CAPTCHA solving or bypass subscription restrictions.
 - Return sanitized results appropriate to the task: discovery candidates (title, stable URL/ID, relevance); page evidence (URL, exact passages and anchors, observed access/coverage); or downloads (saved path, source ID/URL, completion, size/hash, format checks). Do not invent HTTP status or extraction results. Return actual results and remaining limitations in the user's language.
-- If debugging was started only for this task, offer to close the dedicated research window when the user no longer needs it, retaining the persistent profile for next time. Do not terminate unrelated Edge processes or interrupt a session the user wants to keep using.
+- Checkpoint the current task's safe pages and progress before an authorized close. Close only its verified owned targets/windows and retain the persistent global profile. Do not use browser-wide `Browser.close`, terminate all Edge processes, or close another task's window as routine cleanup; those actions require an explicit user request covering them.
 
 ## Validation
 
 Helper commands and offline regression checks are maintained in the local browser reference. Validate modified automation with relevant offline checks; live site tests require the task's authorization and budget. A tested article verifies only that session, article, and file format, not every database entitlement or parser.
+
+For task-session changes, also use the acceptance checks in the task-session reference. Report profile reuse, task-page restoration, and current site authentication as separate results; restored tabs or an existing Cookie database do not establish a valid login.
