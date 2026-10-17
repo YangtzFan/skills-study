@@ -47,7 +47,7 @@ Before handling any request, read and follow <pack-root>/AGENTS.md.
 Resolve relative paths in that file against <pack-root>/.
 ```
 
-例如当前 Windows 安装的入口是 `C:/Users/zhanghang/.codex/skills/AGENTS.md`。这只是本机示例，技能内部保持相对路径。`AGENTS.md` 不是技能，不会仅因存在而自动注册；必须由宿主上下文或明确路由指令加载。Git 子模块也只完成获取与版本登记，不保证技能发现。
+`<pack-root>` 指技能包的实际安装或检出目录；技能内部保持相对路径。`AGENTS.md` 不是技能，不会仅因存在而自动注册；必须由宿主上下文或明确路由指令加载。Git 子模块也只完成获取与版本登记，不保证技能发现。
 
 启用后检查宿主实际列出的技能和加载诊断，并确认入口文件可读。若需新增安装配置，按对应宿主的当前官方文档操作；本 README 不把某个宿主的发现行为推广到其他宿主。
 
@@ -78,7 +78,7 @@ Resolve relative paths in that file against <pack-root>/.
 
 ## 浏览器、预算与隐私
 
-本地认证访问流程见 [Edge 技能](edge-browser-research/SKILL.md)，下载机制与现有 Python helper 接口见 [浏览器参考](web-reader/references/local-browser.md)。远程读取器不继承校园 IP、浏览器登录或 v2rayN 路由；机构标识、文件下载、格式验证和全文可读性分别核验。
+本地认证访问流程见 [Edge 技能](edge-browser-research/SKILL.md)，下载机制与现有 Python helper 接口见 [浏览器参考](web-reader/references/local-browser.md)。远程读取器不继承校园 IP、浏览器登录或本机代理路由；机构标识、文件下载、格式验证和全文可读性分别核验。
 
 网络检索、导航、下载、中转分析和远程检索共用一个任务预算，重试与供应商切换不重置。默认阈值、超时、计数方式和停止条件只在 `research-browser` 中维护。本地 DOM 检查和文件处理不消耗外部调用次数；费用遵循已有授权。
 
