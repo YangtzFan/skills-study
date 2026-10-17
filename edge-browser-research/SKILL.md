@@ -50,6 +50,8 @@ Read the [local browser mechanics reference](../web-reader/references/local-brow
 
 Use the download procedure in the local browser reference, with the same task ID and budget. Choose the actual clickable control, rather than a containing span. Preserve the actual source format; for the helper, `--format caj` checks CAJ/KDH markers.
 
+When full text of an external paper is needed, download and verify it in the task `downloads/` directory before reading it, preferring an authorized PDF. If PDF is unavailable, retain a permitted source in its actual format; do not persist authentication data. If a valid full-text file cannot be saved, report the limitation and do not claim full-text review from a preview. Abstract or metadata review alone does not require downloading the full paper.
+
 - If the publisher opens a PDF preview rather than downloading, inspect the preview's iframe/embed source. Use the normal download control, or a same-session browser retrieval when the user authorized the file. Validate the response before writing; do not send its authenticated URL to a remote reader or silently export browser cookies into a separate HTTP client.
 - Report per-database results separately. One successful article does not prove access to every journal, year, degree thesis, or file format. Download verification does not establish document readability.
 

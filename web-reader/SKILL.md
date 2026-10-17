@@ -13,6 +13,7 @@ description: Read specified web pages or download source documents, preserving p
 
 - Use browser automation for JavaScript-dependent or interactive pages when that capability is available.
 - Save an HTTP-served PDF under the task `downloads/` directory. Download verification does not establish that its contents have been extracted.
+- Before reading an external paper's full text, download and verify the source in the task `downloads/` directory, preferring an authorized PDF. If PDF is unavailable, preserve a permitted full-text source in its actual format, including standalone HTML when necessary, without authentication data. If a valid full-text file cannot be saved, report the limitation and do not use an unsaved preview as a full-text review. Abstracts and metadata may still be read with their scope identified; user-provided local papers need no re-download.
 - Do not forward private, authenticated, signed, or token-bearing URLs to a third-party reader service.
 
 ## Preferred Tools
@@ -33,7 +34,7 @@ python -m trafilatura -u "$URL" --markdown
 
 After obtaining a source file, report its download status; page-extraction steps apply to HTML pages, not binary files.
 
-Reuse page content already supplied by the browser or another reader.
+Reuse page content already supplied by the browser or another reader, subject to the paper full-text download requirement above.
 
 1. Inspect the response content type, final URL, and size before processing the body when the selected tool exposes that information.
 2. If the resource is a PDF, save it under `.agents-work/<task-id>/downloads/` and register it in the task index. For download verification, validate the response and file format without claiming its full contents have been read. Retain user-requested downloads.
