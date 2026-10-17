@@ -18,7 +18,18 @@ Use the user's authorized local browser session for the requested sites. Establi
 
 Connect only to a loopback debugging endpoint and inspect only task-relevant tabs. Prefer a dedicated research profile; debugging gives control of the connected browser. If the user already enabled debugging, inspect the endpoint and relevant page first. Do not restart Edge or replace its profile unnecessarily.
 
-If debugging is unavailable, explain that an ordinary running Edge window cannot automatically be controlled just because the user can browse the site. Offer a dedicated research window. On Windows, the user can run the following in PowerShell; the executable path must exist:
+Use a persistent dedicated research profile, independent of the current project or working directory:
+
+- Windows: `%LOCALAPPDATA%\CodexBrowser\EdgeResearch`. Resolve `LocalApplicationData` from the operating system; do not hard-code a username.
+- Linux: `${XDG_CONFIG_HOME:-$HOME/.config}/codex-browser/edge-research`. Honor `XDG_CONFIG_HOME` only when it is an absolute path; otherwise use `$HOME/.config`. Resolve paths on the machine running the browser, including when the agent runs in WSL or a container. A Windows Edge instance uses the Windows profile path, not a Linux path.
+
+Reuse the selected directory when it exists and create it only when absent. Never use a project-local `.agents-edge-session`, a temporary directory, or the user's ordinary Edge profile for a new research session. These paths are local to each OS/user; do not share one live profile between Windows and Linux or assume credentials can be transferred between them.
+
+First check the existing loopback CDP endpoint (normally `http://127.0.0.1:9222/json/version`). If it is usable and authorized for the task, connect to it without restarting Edge or migrating its active profile. If the fixed profile is already in use but no usable endpoint is available, diagnose that instance; do not launch competing instances with the same profile or remove profile locks. Do not forcibly migrate an existing legacy profile.
+
+If debugging is unavailable, explain that an ordinary running Edge window cannot automatically be controlled just because the user can browse the site. Within the user's authorization, launch a dedicated research window, or provide the appropriate command below when manual launch is needed. Check the endpoint first as above; the executable path must exist.
+
+Windows (PowerShell):
 
 ```powershell
 $edgePath = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
@@ -28,10 +39,56 @@ if (-not (Test-Path -LiteralPath $edgePath)) {
 if (-not (Test-Path -LiteralPath $edgePath)) {
     throw 'Edge executable not found; locate the installed application first.'
 }
-& $edgePath --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --user-data-dir="$env:TEMP\edge-paper-session" 'about:blank'
+$edgeLocalData = [Environment]::GetFolderPath('LocalApplicationData')
+if ([string]::IsNullOrWhiteSpace($edgeLocalData)) {
+    throw 'LocalApplicationData could not be resolved; do not fall back to a project or temporary directory.'
+}
+$edgeProfilePath = Join-Path $edgeLocalData 'CodexBrowser\EdgeResearch'
+if (-not (Test-Path -LiteralPath $edgeProfilePath)) {
+    New-Item -ItemType Directory -Path $edgeProfilePath -Force | Out-Null
+}
+if (-not (Test-Path -LiteralPath $edgeProfilePath -PathType Container)) {
+    throw 'The research profile path exists but is not a directory.'
+}
+& $edgePath --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --user-data-dir="$edgeProfilePath" 'about:blank'
 ```
 
-The dedicated profile does not inherit the user's ordinary Edge login state. Keep profiles outside research artifacts; never copy their cookies or credentials into `.agents-work/`. Have the user open the library/database entry point and complete authentication in this window.
+Linux (Bash, in the user's graphical desktop session):
+
+```bash
+(
+    set -eu
+    edge_path=''
+    for edge_candidate in microsoft-edge microsoft-edge-stable microsoft-edge-beta microsoft-edge-dev; do
+        if command -v "$edge_candidate" >/dev/null 2>&1; then
+            edge_path=$(command -v "$edge_candidate")
+            break
+        fi
+    done
+    if [ -z "$edge_path" ]; then
+        printf '%s\n' 'Edge executable not found; locate the installed application first.' >&2
+        exit 1
+    fi
+    case "${XDG_CONFIG_HOME:-}" in
+        /*) edge_config_root=$XDG_CONFIG_HOME ;;
+        *) edge_config_root="${HOME:?HOME must be set}/.config" ;;
+    esac
+    case "$edge_config_root" in
+        /*) ;;
+        *) printf '%s\n' 'The profile root must be an absolute path.' >&2; exit 1 ;;
+    esac
+    edge_profile_path="$edge_config_root/codex-browser/edge-research"
+    if [ ! -d "$edge_profile_path" ]; then
+        (umask 077; mkdir -p -- "$edge_profile_path")
+    fi
+    "$edge_path" --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 \
+        --user-data-dir="$edge_profile_path" 'about:blank'
+)
+```
+
+On Linux, use an available graphical session for manual authentication. If none is available, report that limitation or connect to an already authorized reachable loopback session; do not silently switch to headless mode or add `--no-sandbox`. If using Chromium instead of Edge, explicitly identify the substitution and use a separate persistent sibling profile (`chromium-research`); do not open an Edge profile with a different browser.
+
+The dedicated profile does not inherit the user's ordinary Edge login state. Reusing it preserves saved browser state, but sites can expire authentication; verify access and let the user complete login, MFA, or CAPTCHA when required. Keep profiles outside research artifacts; never copy their cookies or credentials into `.agents-work/`. Have the user open the library/database entry point and complete authentication in this window when needed. Retain the profile across tasks and browser restarts; do not delete or reset it as task cleanup.
 
 The user may verify that `http://127.0.0.1:9222/json/version` opens. The agent should verify the endpoint independently; a user's confirmation alone is not proof that the current tool can connect. Do not ask the user to paste the debugger's WebSocket URL or authentication data into chat.
 
@@ -60,7 +117,7 @@ When full text of an external paper is needed, download and verify it in the tas
 - Follow the shared external-call and spending budget. Local DOM checks consume no external attempts; navigation and file retrieval do. Do not blindly repeat a click when a login page, preview, challenge, cancellation, or timeout explains the missing download.
 - Authentication failures require a changed/verified session before retrying. Let the user complete challenges; do not automate CAPTCHA solving or bypass subscription restrictions.
 - Return sanitized results appropriate to the task: discovery candidates (title, stable URL/ID, relevance); page evidence (URL, exact passages and anchors, observed access/coverage); or downloads (saved path, source ID/URL, completion, size/hash, format checks). Do not invent HTTP status or extraction results. Return actual results and remaining limitations in the user's language.
-- If debugging was started only for this task, offer to close the dedicated research window when the user no longer needs it. Do not terminate unrelated Edge processes or interrupt a session the user wants to keep using.
+- If debugging was started only for this task, offer to close the dedicated research window when the user no longer needs it, retaining the persistent profile for next time. Do not terminate unrelated Edge processes or interrupt a session the user wants to keep using.
 
 ## Validation
 
