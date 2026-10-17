@@ -23,13 +23,13 @@ description: Convert local source documents into structured Markdown and retriev
 | TXT and Markdown | Direct text reading |
 | HTML | Trafilatura |
 | EPUB | Pandoc or EbookLib |
-| PNG and JPEG | `image-analysis` with local OCR and an approved relay model when configured |
+| PNG and JPEG | Available local OCR or authorized image-understanding capability |
 
 Use Docling or Unstructured only when a format-specific tool is unavailable or produces inadequate results. Check that required executables, libraries, and OCR language data are available before starting. Use an available local alternative or report the missing capability; do not install dependencies or send documents to an external converter without explicit user authorization.
 
 ## Processing Modes
 
-- `immediate` is the default for one-off extraction and questions. Keep extracted text, provenance, and extraction limitations in the current handoff without creating artifact directories or files. Artifact paths are `null`; provide `content_markdown` and `coverage` so `document-qa` can answer without a persisted cache.
+- `immediate` is the default for one-off extraction and questions. Keep extracted text, provenance, and extraction limitations in memory without creating artifact directories or files. Artifact paths are `null`; provide `content_markdown` and `coverage`.
 - `persistent` is for reusable extraction results requested by the user or needed for a task that cannot be handled reliably in the current handoff. Write the three Markdown artifacts and register them in the task's `index.md`; return their actual paths, not hypothetical paths.
 - Knowledge base maintenance always uses persistent extraction in the knowledge base location and remains subject to explicit user authorization.
 
@@ -40,14 +40,14 @@ Use Docling or Unstructured only when a format-specific tool is unavailable or p
 2. Compute `doc_id` as the first 12 hexadecimal characters of the file's SHA-256 digest so the identifier remains stable when the file is moved.
 3. Select the processing mode. Create `.agents-work/<task-id>/documents/<doc_id>/` only in persistent mode, using the knowledge base location for knowledge base maintenance.
 4. Extract text while preserving the source structure. Keep PDF page numbers, DOCX heading levels, spreadsheet sheet names, and PPTX slide numbers.
-5. For a standalone image, a scanned page, or visually significant content such as a diagram or table, read and apply `../image-analysis/SKILL.md`. Attempt local OCR when available; preserve its unavailable or failed status otherwise. Use authorized host vision or an approved relay only under that skill's capability and privacy rules.
+5. For scanned pages or visually significant content such as a diagram or table, attempt available local OCR when relevant and preserve its unavailable or failed status otherwise. Use only authorized image-understanding capabilities; never upload non-public source content without explicit consent. Record gaps that cannot be extracted reliably.
 6. Mark OCR-derived chunks with `"ocr": true`. Label model-derived observations as `host_vision` or `relay`, with provider and model identifiers when known; do not invent relay identifiers for host-provided analysis.
-7. In immediate mode, return extracted content, anchors, and coverage limitations in memory with `null` artifact paths. In persistent mode, write `content.md`, `chunks.md`, and `metadata.md`, register them in the task's `index.md` when applicable, and link any image-analysis Markdown. Keep extraction outputs under `documents/<doc_id>/` as Markdown; task-downloaded sources and necessary processing files follow the shared `downloads/` and `intermediates/` exceptions.
+7. In immediate mode, return extracted content, anchors, and coverage limitations in memory with `null` artifact paths. In persistent mode, write `content.md`, `chunks.md`, and `metadata.md`, register them in the task's `index.md` when applicable, and link any supporting visual analysis. Keep extraction outputs under `documents/<doc_id>/` as Markdown; task-downloaded sources and necessary processing files follow the shared `downloads/` and `intermediates/` exceptions.
 8. When chunking is needed for persistent retrieval or a large immediate handoff, split on structural boundaries before size-based chunking. Target 800 to 1,200 tokens per chunk with approximately 100 tokens of overlap when useful; do not chunk a small one-off extraction unnecessarily.
 
 ## Knowledge Base Mode
 
-Use this mode when `research-browser` adds or updates a project background document.
+Use this mode when explicitly asked to add or update a project background document.
 
 - Write the derived artifacts to `.agents-work/knowledge/documents/<doc_id>/` instead of a task directory, so the document stays available to every later task in this project.
 - Update the registry at `.agents-work/knowledge/index.md`, keeping it a Markdown table that records `doc_id`, the original source path, the topic, a short summary, and the ingestion time.
@@ -116,4 +116,4 @@ Exact extracted text goes here.
 - For an encrypted document, let the user unlock it locally or provide an authorized readable copy; do not request a password in chat or bypass encryption.
 - For a corrupted file, report the exact error and do not guess its contents.
 - For an unsupported format, identify the limitation and name the supported conversion targets.
-- If relay analysis fails, preserve the OCR result, report the sanitized failure details required by `image-analysis`, and do not represent the model analysis as completed.
+- If relay analysis fails, preserve the OCR result, report sanitized failure details, and do not represent the model analysis as completed.

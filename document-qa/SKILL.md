@@ -1,13 +1,13 @@
 ---
 name: document-qa
-description: Answer questions from previously ingested local documents with precise provenance and verbatim evidence. Use when a document has a doc_id from document-ingest or when research-browser needs local-document evidence.
+description: Answer questions from extracted local documents with precise provenance and verbatim evidence. Use when an immediate extraction or accessible document artifacts are available.
 ---
 
 # Document Question Answering
 
 ## When to Use
 
-- Use this skill when a relevant `doc_id` exists from `document-ingest`, either as an immediate extraction handoff or persisted artifacts.
+- Use this skill when a relevant `doc_id` and extracted content are available, either in memory or as persisted artifacts.
 - Use it when the user asks a factual question about an ingested document.
 - Use it for the local-document phase of a combined local and external research task.
 - Use it when the answer depends on a document registered in the project knowledge base at `.agents-work/knowledge/`.
@@ -16,7 +16,7 @@ description: Answer questions from previously ingested local documents with prec
 
 - `doc_id`: One document identifier or a list of document identifiers. A knowledge base document is addressed by the same `doc_id` form.
 - `question`: The question to answer from the documents.
-- `extraction`: Optional immediate handoff from `document-ingest`, including `doc_id`, `content_markdown`, source anchors, and extraction coverage. It does not require artifact files.
+- `extraction`: Optional immediate extraction, including `doc_id`, `content_markdown`, source anchors, and extraction coverage. It does not require artifact files.
 - `top_k`: The optional maximum number of retained evidence chunks per targeted retrieval pass, with a default of 8. It is not a coverage limit for document-wide questions or absence claims.
 
 ## Security and Privacy
@@ -71,12 +71,6 @@ Use the user's requested language and format. The template below is for a detail
 
 Omit the `Not Found` section when every part of the question is answered.
 
-## Research Router Handoff
-
-- When `research-browser` invokes this skill for a combined task, return a clearly labeled local-evidence block.
-- Do not merge external sources into this block because the router performs the synthesis.
-- Mark a claim with `needs_external: true` when it requires current or external verification.
-
 ## Work Directory
 
 - Read document artifacts from `.agents-work/<task-id>/documents/<doc_id>/` for the current task, and from `.agents-work/knowledge/documents/<doc_id>/` for project background documents, unless the user explicitly provides another existing ingestion location.
@@ -85,5 +79,5 @@ Omit the `Not Found` section when every part of the question is answered.
 
 ## Failure Handling
 
-- If neither an immediate extraction handoff nor a `doc_id` with accessible artifacts exists, use `document-ingest` before answering.
+- If neither an immediate extraction nor a `doc_id` with accessible artifacts exists, report that the document evidence is unavailable; do not infer its contents.
 - If required persisted artifacts are empty or unreadable and no valid immediate handoff is available, report the exact problem instead of inferring document content. Never treat `null` paths from immediate mode as a cache failure.

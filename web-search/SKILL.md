@@ -8,13 +8,7 @@ description: Search the public web and return ranked candidate sources with stru
 ## When to Use
 
 - Use this skill when the user explicitly requests a web search or when the answer depends on current external information.
-- Use it to discover candidate URLs before applying `web-reader`.
-
-## Routing Boundaries
-
-- Apply `web-reader` when the task is to read a specific URL.
-- Apply `document-ingest` when the task needs local document extraction or document-grounded evidence. Ordinary engineering-file review uses direct file reads.
-- For searching an institution-authorized database through Edge/Chromium, hand off to `../edge-browser-research/SKILL.md`; this skill discovers public-web candidates. Interactive page reading belongs to `web-reader`.
+- Use it to discover and rank public-web candidate URLs; search snippets are not full-page evidence.
 
 ## Search Providers
 

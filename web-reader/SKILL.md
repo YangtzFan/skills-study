@@ -7,13 +7,12 @@ description: Read specified web pages or download source documents, preserving p
 
 ## When to Use
 
-- Use this skill when the user supplies a public URL or `web-search` returns a URL whose full content is needed.
-- Use it when a search-result snippet is insufficient to support the answer, or when an authorized browser workflow needs a page-extraction handoff.
+- Use this skill when the full content of a specified page is needed, including when a search-result snippet is insufficient to support the answer.
 
-## Routing and Access
+## Access
 
 - Use browser automation for JavaScript-dependent or interactive pages when that capability is available.
-- Save an HTTP-served PDF under the task `downloads/` directory. Apply `document-ingest` when its contents need extraction; download-only verification does not require ingestion.
+- Save an HTTP-served PDF under the task `downloads/` directory. Download verification does not establish that its contents have been extracted.
 - Do not forward private, authenticated, signed, or token-bearing URLs to a third-party reader service.
 
 ## Preferred Tools
@@ -22,7 +21,7 @@ Choose by access requirements rather than a fixed fallback ladder:
 
 - Public static pages: use an available built-in reader or direct HTTP fetch; extract with an already-installed suitable library. A third-party reader may be used for public pages within the call budget.
 - Interactive, authenticated, or institution-authorized pages: use an authorized local browser session when available. A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
-- Delegate local-browser connection, authenticated interaction, database search, and browser downloads to `../edge-browser-research/SKILL.md`. Resume here only for page extraction and provenance; do not restart routing. Read [local browser mechanics](references/local-browser.md) only when download implementation details are needed.
+- Read [local browser mechanics](references/local-browser.md) when download implementation details are needed.
 
 Example static extraction command:
 
@@ -32,18 +31,18 @@ python -m trafilatura -u "$URL" --markdown
 
 ## Workflow
 
-After obtaining a source file, return its download handoff or continue to ingestion as required; page-extraction steps apply to HTML pages, not binary files.
+After obtaining a source file, report its download status; page-extraction steps apply to HTML pages, not binary files.
 
-Reuse page content already supplied by the browser or another reader. Delegate only a missing access/interaction step; do not send an acquired page back through the browser workflow.
+Reuse page content already supplied by the browser or another reader.
 
 1. Inspect the response content type, final URL, and size before processing the body when the selected tool exposes that information.
-2. If the resource is a PDF, save it under `.agents-work/<task-id>/downloads/` and register it in the task index. For reading or extraction, apply `document-ingest` in immediate or persistent mode as needed. For download verification, validate the response and file format without claiming its full contents have been read. Retain user-requested downloads.
+2. If the resource is a PDF, save it under `.agents-work/<task-id>/downloads/` and register it in the task index. For download verification, validate the response and file format without claiming its full contents have been read. Retain user-requested downloads.
    For CAJ/KDH or other source formats, preserve the actual format and report download and extraction capabilities separately. Browser download mechanics belong to the linked local-browser reference.
 3. Fetch the page and extract its main content while excluding navigation, advertisements, cookie notices, and repetitive footers.
 4. Preserve meaningful headings, lists, tables, links, and code blocks.
 5. Capture the title, author, publication date, and site name when the page provides them.
 6. Retain verbatim passages that directly support the claims for which the page will be cited.
-7. If an image on the page is itself material evidence and text extraction is insufficient, read and apply `../image-analysis/SKILL.md` to that image.
+7. Identify material images whose content is not captured by text extraction and preserve their provenance.
 
 ## Work Directory
 

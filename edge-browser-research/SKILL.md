@@ -51,14 +51,13 @@ Read the [local browser mechanics reference](../web-reader/references/local-brow
 Use the download procedure in the local browser reference, with the same task ID and budget. Choose the actual clickable control, rather than a containing span. Preserve the actual source format; for the helper, `--format caj` checks CAJ/KDH markers.
 
 - If the publisher opens a PDF preview rather than downloading, inspect the preview's iframe/embed source. Use the normal download control, or a same-session browser retrieval when the user authorized the file. Validate the response before writing; do not send its authenticated URL to a remote reader or silently export browser cookies into a separate HTTP client.
-- Report per-database results separately. One successful article does not prove access to every journal, year, degree thesis, or file format. Apply [document-ingest](../document-ingest/SKILL.md) only when content extraction is needed; a download test need not ingest the full paper.
+- Report per-database results separately. One successful article does not prove access to every journal, year, degree thesis, or file format. Download verification does not establish document readability.
 
-## Stop conditions and handoff
+## Stop conditions and output
 
 - Follow the shared external-call and spending budget. Local DOM checks consume no external attempts; navigation and file retrieval do. Do not blindly repeat a click when a login page, preview, challenge, cancellation, or timeout explains the missing download.
 - Authentication failures require a changed/verified session before retrying. Let the user complete challenges; do not automate CAPTCHA solving or bypass subscription restrictions.
-- Return a sanitized handoff appropriate to the task: discovery candidates (title, stable URL/ID, relevance); page evidence (URL, exact passages and anchors, observed access/coverage); or downloads (saved path, source ID/URL, completion, size/hash, format checks). Do not invent HTTP status or extraction results.
-- For page extraction, continue with `../web-reader/SKILL.md` using the same browser evidence. For source-document content, continue with `../document-ingest/SKILL.md`, then `document-qa` for document questions. An access/download-only task ends with verification. Return actual results and remaining limitations in the user's language.
+- Return sanitized results appropriate to the task: discovery candidates (title, stable URL/ID, relevance); page evidence (URL, exact passages and anchors, observed access/coverage); or downloads (saved path, source ID/URL, completion, size/hash, format checks). Do not invent HTTP status or extraction results. Return actual results and remaining limitations in the user's language.
 - If debugging was started only for this task, offer to close the dedicated research window when the user no longer needs it. Do not terminate unrelated Edge processes or interrupt a session the user wants to keep using.
 
 ## Validation

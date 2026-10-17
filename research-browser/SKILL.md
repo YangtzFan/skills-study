@@ -19,6 +19,8 @@ Use previously loaded skill text when current; the router is a decision procedur
 
 Use `web-search` for public discovery and `web-reader` for page extraction. Use `edge-browser-research` for authorized local-browser interaction and database search/downloads; it hands evidence to `web-reader` or `document-ingest` only when extraction is needed. Use `document-ingest` and `document-qa` for local-document evidence, and `image-analysis` for visual evidence. A policy reference back to this file does not restart routing or reset task state.
 
+The router owns cross-skill sequencing, including when a worker is invoked directly for a task that needs additional capabilities. Reuse the active task ID, budget, authorized browser session, and acquired evidence; do not repeat successful access or extraction. For authenticated browser tasks, use the browser worker for access and interaction, then use the page reader only if page extraction is needed. For downloaded source documents, use document ingestion only when their content is needed, followed by document QA for questions about that content; verification alone ends with the download result. Route material images from pages or documents to image analysis when visual evidence is needed. Keep document evidence distinct from external evidence for synthesis, and flag claims that need external verification. If required extracted document evidence is absent, obtain it before document QA; do not fabricate it.
+
 ## Skill Location
 
 This skill pack can be installed globally, for example at `~/.agents/skills/`, or vendored into a project as a submodule. Never assume an absolute install location, and never assume a particular pack directory name.

@@ -2,7 +2,7 @@
 
 Use this reference when a task needs an already-authorized browser session, interactive database access, or source-file downloads. It does not authorize access to unrelated tabs or credential export.
 
-Connection setup, interactive research, and authentication decisions belong to [edge-browser-research](../../edge-browser-research/SKILL.md). This reference owns shared download mechanics and the existing helper interface; following that link does not restart an already active workflow.
+This reference documents local browser download mechanics and the existing helper interface. Use only an authorized local session and keep authentication in the browser.
 
 ## Downloads
 
