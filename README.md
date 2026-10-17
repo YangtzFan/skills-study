@@ -10,7 +10,7 @@
 | [research-browser](research-browser/SKILL.md) | 研究路由、跨来源综合、工件与外部调用预算的唯一规则来源。 |
 | [web-search](web-search/SKILL.md) | 公开网络发现候选来源，不把搜索摘要当成正文证据。 |
 | [web-reader](web-reader/SKILL.md) | 指定网页的正文、元数据、原文引用和来源交接。 |
-| [edge-browser-research](edge-browser-research/SKILL.md) | 本地 Edge/Chromium 会话的认证交互、数据库检索与论文下载验证。 |
+| [edge-browser-research](edge-browser-research/SKILL.md)（[使用说明](edge-browser-research/README.md)） | 本地 Edge/Chromium 认证检索、论文下载验证、全局配置复用与按任务恢复窗口。 |
 | [document-ingest](document-ingest/SKILL.md) | 文档抽取、结构与定位信息、即时或持久化交接。 |
 | [document-qa](document-qa/SKILL.md) | 基于抽取结果检索、回答、引用，并核对覆盖范围。 |
 | [image-analysis](image-analysis/SKILL.md) | 图片证据的 OCR、宿主视觉或经授权的中转模型分析。 |
@@ -59,6 +59,8 @@ Resolve relative paths in that file against <pack-root>/.
 <workspace>/.agents-work/
 ├── <YYYY-MM-DD-task-slug>/
 │   ├── index.md           # 来源、用途、路径、状态
+│   ├── browser/
+│   │   └── session.json  # 经过筛选的任务页面恢复信息与检索进度
 │   ├── downloads/         # 下载的 PDF、CAJ/KDH、图片等原始来源
 │   ├── intermediates/     # 必要的渲染页、裁剪、处理缓存等
 │   └── .../*.md           # 抽取正文、引用、研究记录
@@ -70,9 +72,9 @@ Resolve relative paths in that file against <pack-root>/.
         └── metadata.md
 ```
 
-工作区为任务的当前工作目录，任务内复用同一目录。证据记录与索引使用 UTF-8 Markdown；原始下载和必要处理文件分别是 `downloads/`、`intermediates/` 下的明确例外。用户原件保持原位只读。应用代码、技能实现和用户指定的产品素材遵循各自目标位置。
+工作区为任务的当前工作目录，任务内复用同一目录。证据记录与索引使用 UTF-8 Markdown；原始下载、必要处理文件和经过筛选的 `browser/session.json` 是明确例外。会话记录不是浏览器配置副本或原始 CDP 响应。用户原件保持原位只读。应用代码、技能实现和用户指定的产品素材遵循各自目标位置。
 
-不创建无用途的目录或占位文件，不保存凭据、浏览器配置档、认证参数或原始服务响应。宿主项目可在 `.gitignore` 中加入 `.agents-work/`；不自动修改用户忽略规则。
+不创建无用途的目录或占位文件，不在研究工件中保存凭据、浏览器配置档、认证参数或原始服务响应。浏览器认证由操作系统上的专用全局配置保留，具体路径见 Edge 使用说明。宿主项目可在 `.gitignore` 中加入 `.agents-work/`；不自动修改用户忽略规则，任务会话记录不随技能代码提交。
 
 知识库仅属于当前工作区，没有全局知识库。用户明确要求新增或更新背景资料时才入库；相关研究/文档任务读取索引，索引未变则复用，普通工程任务无需读取。`doc_id` 来自内容哈希，源文件改变后生成新 ID，并登记替代关系。知识库不是普遍真理，冲突保留来源和时效。
 
@@ -80,13 +82,15 @@ Resolve relative paths in that file against <pack-root>/.
 
 本地认证访问流程见 [Edge 技能](edge-browser-research/SKILL.md)，下载机制与现有 Python helper 接口见 [浏览器参考](web-reader/references/local-browser.md)。远程读取器不继承校园 IP、浏览器登录或本机代理路由；机构标识、文件下载、格式验证和全文可读性分别核验。
 
+Edge 的[使用说明](edge-browser-research/README.md)覆盖 Windows/Linux 配置位置、新任务空白窗口、同一任务恢复和认证失效处理。各任务窗口共享登录与站点存储；任务记录保存在各自工作区。此技能提供代理执行规则，不是自动运行的浏览器扩展或独立会话管理程序。
+
 网络检索、导航、下载、中转分析和远程检索共用一个任务预算，重试与供应商切换不重置。默认阈值、超时、计数方式和停止条件只在 `research-browser` 中维护。本地 DOM 检查和文件处理不消耗外部调用次数；费用遵循已有授权。
 
 本地文档、私有/认证图片向第三方传输须获得明确授权；读取文件或已有密钥不等于上传许可。图片分析保留 OCR、宿主视觉与中转结果的来源区别；配置、能力和错误处理由 `image-analysis` 维护。用户在浏览器内完成密码、MFA 和 CAPTCHA，不导出认证会话。
 
 ## 维护与验证
 
-- 每个技能入口为带 `name`、`description` 的 `SKILL.md`，技能正文用英语；中文说明集中在本 README。
+- 每个技能入口为带 `name`、`description` 的 `SKILL.md`，技能正文用英语；中文用户说明由本 README 导航至相应技能的 README。
 - 相对路径按包含该引用的文件所在目录解析；AGENTS 的路径按包根目录解析。安装位置改变无需改写跨技能引用。
 - 共享规则维护单一来源，子技能保留能力特有的证据、覆盖与权限边界；详细浏览器机制不复制到多个入口。
 - 修改后检查 frontmatter、实际引用路径、路由场景与 `git diff --check`；脚本行为改变时运行相应测试。结构验证不能证明真实站点权限或模型能力。

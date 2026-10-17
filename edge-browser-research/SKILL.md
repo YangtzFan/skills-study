@@ -29,9 +29,13 @@ Use a persistent dedicated research profile, independent of the current project 
 - Windows: `%LOCALAPPDATA%\CodexBrowser\EdgeResearch`. Resolve `LocalApplicationData` from the operating system; do not hard-code a username.
 - Linux: `${XDG_CONFIG_HOME:-$HOME/.config}/codex-browser/edge-research`. Honor `XDG_CONFIG_HOME` only when it is an absolute path; otherwise use `$HOME/.config`. Resolve paths on the machine running the browser, including when the agent runs in WSL or a container. A Windows Edge instance uses the Windows profile path, not a Linux path.
 
+Resolve the profile for the browser's OS user, not a different sandbox/container account. If the browser host/user cannot be established, diagnose that mismatch instead of creating another profile under the agent's home or workspace.
+
 Reuse the selected directory when it exists and create it only when absent. Never use a project-local `.agents-edge-session`, a temporary directory, or the user's ordinary Edge profile for a new research session. These paths are local to each OS/user; do not share one live profile between Windows and Linux or assume credentials can be transferred between them.
 
 First check the existing loopback CDP endpoint (normally `http://127.0.0.1:9222/json/version`). If it is usable and authorized for the task, connect to it without restarting Edge or migrating its active profile, then select or create the current task's window using the session rules above. Reusing a browser process does not assign its existing pages to the current task. If the fixed profile is already in use but no usable endpoint is available, diagnose that instance; do not launch competing instances with the same profile or remove profile locks. Do not forcibly migrate an existing legacy profile.
+
+Before controlling an existing endpoint, verify its browser instance and profile using known authorized launch information or scoped local process metadata. A reachable port or a successful `/json/version` response alone does not prove it uses the expected profile. If an explicitly authorized legacy instance is reused, report that exception rather than claiming the fixed profile was selected. Do not attach to an unknown instance or stop the process occupying the port; diagnose the mismatch and preserve the authorized instance.
 
 If debugging is unavailable, explain that an ordinary running Edge window cannot automatically be controlled just because the user can browse the site. Within the user's authorization, launch a dedicated research window, or provide the appropriate command below when manual launch is needed. Check the endpoint first as above; the executable path must exist.
 
