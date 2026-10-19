@@ -7,6 +7,12 @@ description: Use an authorized local Microsoft Edge session for website authenti
 
 Use the user's authorized local browser session for the requested sites. Establish connection, institutional access, download completion, and document readability as separate observations.
 
+## Boundary with public browsing
+
+This worker owns authorized website authentication, academic-database paper search, and paper downloads in that Edge workflow. General public search and ordinary public-page reading belong to [web-research](../web-research/SKILL.md), even when its chosen browser is Microsoft Edge. Browser brand alone does not invoke this skill. Its Edge-only requirement does not restrict the public worker's use of Firefox, Chrome, Chromium, or Edge.
+
+Public search CAPTCHAs alone do not trigger this authentication workflow; the public worker handles verification state under its own guidance. When the task actually needs authenticated or institutional access, follow this skill with the applicable authorization and retain the active task and budget. Do not attach a public-search task to this worker's persistent authenticated profile, export its Cookies to an HTTP client, or delete that profile during public-task cleanup. The public worker's temporary-session rules do not replace this skill's profile and task-window rules.
+
 ## Choose the access path
 
 - Read the applicable global instructions and shared [research-browser contract](../research-browser/SKILL.md). Reuse already-read instructions and continue the same task directory when the research task continues.

@@ -1,6 +1,6 @@
 # Edge Browser Research 使用说明
 
-仅在有可用 Microsoft Edge 的环境中，通过获授权的本机会话进行网页认证、学术数据库论文检索和论文下载验证。通用网页搜索始终交给 [web-research](../web-research/SKILL.md)，禁止在 Edge 中操作搜索引擎，包括回退搜索。浏览器的登录配置跨项目复用，任务的页面恢复信息和检索进度保存在各自工作区。
+仅在有可用 Microsoft Edge 的环境中，通过获授权的本机会话进行网页认证、学术数据库论文检索和对应论文下载验证。通用网页搜索和普通公开页面读取始终交给 [web-research](../web-research/SKILL.md)，即使选用的浏览器是 Edge 也不触发本技能。按任务性质而非浏览器品牌分工。认证工作流的登录配置跨项目复用，任务的页面恢复信息和检索进度保存在各自工作区。
 
 本技能是一组供代理遵循的执行规则，需要宿主提供浏览器工具或可用的本地 CDP 能力；它不是浏览器扩展，也不包含独立的启动器或自动会话管理程序。技能不会自动登录，密码、MFA 和 CAPTCHA 由用户在浏览器中完成。
 
@@ -15,9 +15,9 @@
 
 ## 使用条件
 
-本地浏览器模式需要已安装的 Microsoft Edge、允许手动认证的图形桌面，以及代理可访问的本机回环调试端点。没有 Edge 时报告相应能力不可用，不以 Chromium 或其他浏览器替代。适用范围以 [AGENTS.md](../AGENTS.md) 和 [research-browser](../research-browser/SKILL.md) 为准。默认检查 `http://127.0.0.1:9222/json/version`，控制浏览器前还要核对实例和配置归属；端口可连接不等于接入了正确的配置。
+本地浏览器模式需要已安装的 Microsoft Edge、允许手动认证的图形桌面，以及代理可访问的本机回环调试端点。没有 Edge 时报告本技能的相应能力不可用，不以 Chromium 或其他浏览器替代；这不限制 `web-research` 选择其他浏览器进行公开检索。适用范围以 [AGENTS.md](../AGENTS.md) 和 [research-browser](../research-browser/SKILL.md) 为准。默认检查 `http://127.0.0.1:9222/json/version`，控制浏览器前还要核对实例和配置归属；端口可连接不等于接入了正确的配置。
 
-没有本地浏览器不影响独立的 [web-research](../web-research/SKILL.md) 通过可用工具执行公开搜索、静态网页读取或直接下载公开文件。只有需要本技能范围内的认证、数据库论文检索或论文下载时，才要求相应浏览器能力；公开页面需要 JavaScript 渲染本身不授权 Edge 操作。
+没有本地浏览器不影响独立的 [web-research](../web-research/SKILL.md) 通过可用工具执行公开搜索、静态网页读取或直接下载公开文件。有可用真实浏览器时，该技能可按[公开浏览器参考](../web-research/references/public-browser.md)处理 JavaScript 页面，默认使用独立未登录任务会话。公开检索中的验证码由该技能记录或等待人工验证，不因此转入本认证流程；也不复用或清理本技能的持久认证配置。
 
 优先复用已有且获授权的研究实例。需要新启动时，使用 [SKILL 中的操作系统启动示例](SKILL.md#connect-to-edge)。普通 Edge 窗口不一定启用了调试接口；不要为了接入调试而关闭无关窗口。
 
