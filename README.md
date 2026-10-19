@@ -6,7 +6,7 @@
 
 | 技能 | 职责 |
 | --- | --- |
-| [critical-reasoning](critical-reasoning/SKILL.md) | 每个请求的前提、证据、不确定性与回答质量检查。 |
+| [critical-reasoning](critical-reasoning/SKILL.md) | 按任务影响与不确定性检查前提、证据、逻辑、数值和决策取舍；校准结论并随证据修正。 |
 | [research-browser](research-browser/SKILL.md) | 研究路由、跨来源综合、工件与外部调用预算的唯一规则来源。 |
 | [web-research](web-research/SKILL.md) | 公开网络搜索、指定网页读取、多轮研究与证据核验；按问题选择研究深度，无 Edge 前置依赖。 |
 | [edge-browser-research](edge-browser-research/SKILL.md)（[使用说明](edge-browser-research/README.md)） | 仅在有可用 Edge 的环境下进行网页认证、学术数据库论文检索和论文下载；复用全局配置并按任务恢复窗口。 |
@@ -19,6 +19,10 @@
 ## 路由与交接
 
 [AGENTS.md](AGENTS.md) 是全局轻量入口：所有请求应用 `critical-reasoning`；研究、文档证据、图片证据和知识库维护才加载 `research-browser`。代码、配置、提示词和技能审查直接读取文件；已有证据足够的后续问题不重复检索或抽取。
+
+`critical-reasoning` 按任务需要分配检查力度：简单编辑、翻译与创作侧重意图和约束，不强制联网或套用论证模板；复杂或后果重大的问题核查关键假设、替代解释及可能改变结论的证据。缺失信息会实质影响结果且没有合理默认值时才澄清，否则按必要的明确假设继续。
+
+推理检查区分事实、假设、推断与预测，关注因果解释、样本外推、单位、分母和比较基线；未检索到或无法读取不自动意味着不存在。建议依据用户目标和偏好权衡，并说明会改变建议的条件；新证据出现时修正具体结论，执行任务按可观察的完成标准核验。核验力度与任务相称，不另设研究预算，也不把结构校验通过当作实际行为保证。
 
 ```text
 AGENTS.md -> critical-reasoning（所有请求）
