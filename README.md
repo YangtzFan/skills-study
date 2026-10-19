@@ -8,8 +8,8 @@
 | --- | --- |
 | [critical-reasoning](critical-reasoning/SKILL.md) | 每个请求的前提、证据、不确定性与回答质量检查。 |
 | [research-browser](research-browser/SKILL.md) | 研究路由、跨来源综合、工件与外部调用预算的唯一规则来源。 |
-| [web-research](web-research/SKILL.md) | 公开网络搜索、指定网页读取与有来源的回答；搜索和读取可独立使用，无 Edge 前置依赖。 |
-| [edge-browser-research](edge-browser-research/SKILL.md)（[使用说明](edge-browser-research/README.md)） | 本地 Edge/Chromium 认证检索、论文下载验证、全局配置复用与按任务恢复窗口。 |
+| [web-research](web-research/SKILL.md) | 公开网络搜索、指定网页读取、多轮研究与证据核验；按问题选择研究深度，无 Edge 前置依赖。 |
+| [edge-browser-research](edge-browser-research/SKILL.md)（[使用说明](edge-browser-research/README.md)） | 仅在有可用 Edge 的环境下进行网页认证、学术数据库论文检索和论文下载；复用全局配置并按任务恢复窗口。 |
 | [document-ingest](document-ingest/SKILL.md) | 文档抽取、结构与定位信息、即时或持久化交接。 |
 | [document-qa](document-qa/SKILL.md) | 基于抽取结果检索、回答、引用，并核对覆盖范围。 |
 | [image-analysis](image-analysis/SKILL.md) | 图片证据的 OCR、宿主视觉或经授权的中转模型分析。 |
@@ -23,17 +23,23 @@
 ```text
 AGENTS.md -> critical-reasoning（所有请求）
          -> research-browser（需要研究或证据处理时）
-              公开搜索与网页读取：web-research（搜索 / 读取）
-              机构数据库：edge-browser-research -> 候选/页面证据/下载记录
+              公开搜索、网页读取与多轮研究：web-research
+              网页认证、数据库论文检索和论文下载：edge-browser-research（需 Edge）
               页面正文：web-research 读取模式 -> 必要时 image-analysis
               文档问答：document-ingest -> document-qa
               独立图片：image-analysis
               混合来源：research-browser 综合各项证据
 ```
 
-指定 URL 直接使用 `web-research` 的读取模式，只有需要发现额外来源时才搜索；仅搜索请求可返回候选来源而不逐页读取。机构数据库通过本地浏览器检索；需要网页正文时交给 `web-research`，需要论文内容时交给 `document-ingest` 和 `document-qa`。仅验证下载无需全文抽取。所有交接延续任务 ID、预算与已有证据；回读共享规则不重新启动路由。
+指定 URL 直接使用 `web-research` 的读取模式，只有需要发现额外来源时才搜索；仅搜索请求可返回候选来源而不逐页读取。学术数据库论文检索通过获授权的 Edge 环境进行；需要网页正文时交给 `web-research`，需要论文内容时交给 `document-ingest` 和 `document-qa`。仅验证下载无需全文抽取。所有交接延续任务 ID、预算与已有证据；回读共享规则不重新启动路由。
 
-`web-research` 合并了原 `web-search` 和 `web-reader` 的技能入口，详细规则分别保存在其 `references/search.md` 和 `references/reading.md`。没有 Edge/Chromium 的机器仍可通过可用搜索工具、HTTP 或公共阅读工具执行公开检索、静态网页读取和公开文件下载；需要交互、渲染或机构认证时，才按能力转入独立的 `edge-browser-research`。缺失某种浏览器能力只限制相应访问方式。原 `web-reader/scripts/` 和 `web-reader/references/local-browser.md` 保留为兼容资源，不再作为独立技能发现。
+`web-research` 合并了原 `web-search` 和 `web-reader` 的技能入口，规则见[搜索](web-research/references/search.md)、[读取](web-research/references/reading.md)和[多轮研究](web-research/references/research.md)。快速查询聚焦检索和核实；比较、争议问题和明确研究请求按子问题检索、读取原始来源，再针对重要证据缺口继续追查。研究深度不会自动增加共享预算；后续问题复用证据和计数。
+
+搜索支持按问题选用多语言词、日期范围和相反证据，区分独立来源与转载；读取支持长网页定点查找，并明确摘要、局部正文与全文的覆盖范围。重要结论逐项对应已检查的证据，保留可用的工具原生引用，否则使用经核验的来源链接；不将搜索摘要或未打开的链接当作全文证据。
+
+技能规范研究行为，不会自动安装搜索服务，也不保证与其他产品功能完全一致。接入模型 API 不代表已有搜索能力；实际能力取决于宿主暴露的工具或已配置且获授权的供应商。缺少搜索工具时如实说明，仍可按能力读取已知 URL，不用记忆模拟检索结果。没有 Edge 的机器仍可通过可用工具执行公开搜索、静态网页读取和公开文件下载。
+
+通用网页搜索始终由 `web-research` 执行，禁止在 Edge 中操作搜索引擎，包括回退搜索。`edge-browser-research` 仅用于网页认证、学术数据库论文检索和论文下载，必须有可用且获授权的 Microsoft Edge，不以 Chromium 替代。公开页面需要 JavaScript 渲染本身不构成转入 Edge 的理由。旧 `web-reader` helper、测试及本地浏览器参考已删除，不再作为兼容资源调用。
 
 文档一次性问答默认 `immediate`：内容、定位与覆盖限制在内存中交接，工件路径为 `null`。需要复用时使用 `persistent`，生成 `content.md`、`chunks.md`、`metadata.md`。内部结构化交接不要求最终回复输出 JSON。
 
@@ -81,7 +87,7 @@ Resolve relative paths in that file against <pack-root>/.
 
 ## 浏览器、预算与隐私
 
-本地认证访问流程见 [Edge 技能](edge-browser-research/SKILL.md)，下载机制与现有 Python helper 接口见 [浏览器参考](web-reader/references/local-browser.md)。远程读取器不继承校园 IP、浏览器登录或本机代理路由；机构标识、文件下载、格式验证和全文可读性分别核验。
+本地认证与论文检索下载流程见 [Edge 技能](edge-browser-research/SKILL.md)，适用范围以 [AGENTS.md](AGENTS.md) 和 [research-browser](research-browser/SKILL.md) 为准。浏览器控制需要宿主提供的工具或可用 CDP 能力，本仓库不再提供旧 Python helper。远程读取器不继承校园 IP、浏览器登录或本机代理路由；机构标识、文件下载、格式验证和全文可读性分别核验。读取外部论文全文前须在任务 `downloads/` 中保留并验证获授权的全文文件，优先 PDF；仅有元数据或摘要不能称为全文审阅。
 
 Edge 的[使用说明](edge-browser-research/README.md)覆盖 Windows/Linux 配置位置、新任务空白窗口、同一任务恢复和认证失效处理。各任务窗口共享登录与站点存储；任务记录保存在各自工作区。此技能提供代理执行规则，不是自动运行的浏览器扩展或独立会话管理程序。
 

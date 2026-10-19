@@ -1,6 +1,6 @@
 # Edge Browser Research 使用说明
 
-通过用户授权的本机 Edge/Chromium 浏览器访问机构数据库、检索论文并验证下载。浏览器的登录配置跨项目复用，任务的页面恢复信息和检索进度保存在各自工作区。
+仅在有可用 Microsoft Edge 的环境中，通过获授权的本机会话进行网页认证、学术数据库论文检索和论文下载验证。通用网页搜索始终交给 [web-research](../web-research/SKILL.md)，禁止在 Edge 中操作搜索引擎，包括回退搜索。浏览器的登录配置跨项目复用，任务的页面恢复信息和检索进度保存在各自工作区。
 
 本技能是一组供代理遵循的执行规则，需要宿主提供浏览器工具或可用的本地 CDP 能力；它不是浏览器扩展，也不包含独立的启动器或自动会话管理程序。技能不会自动登录，密码、MFA 和 CAPTCHA 由用户在浏览器中完成。
 
@@ -9,19 +9,19 @@
 - [SKILL.md](SKILL.md)：适用范围、Windows/Linux 启动示例、研究与下载规则。
 - [任务会话规则](references/task-sessions.md)：`session.json` 字段、地址筛选、窗口归属、恢复与关闭流程。
 - [共享研究约定](../research-browser/SKILL.md)：任务目录、证据保留和外部调用预算。
-- [本地浏览器机制](../web-reader/references/local-browser.md)：现有 Python helper 的能力、下载完成检查和离线验证方式。
+- [全局入口](../AGENTS.md)：Edge 使用范围及通用网页搜索的路由约束。
 
 执行规则以这些技能文件为准；本 README 说明使用方式，不另设一套参数或预算。
 
 ## 使用条件
 
-本地浏览器模式需要已安装的 Edge 或可用的 Chromium、允许手动认证的图形桌面，以及代理可访问的本机回环调试端点。Chromium 替代时须明确说明并使用独立配置，具体按 SKILL 执行。默认检查 `http://127.0.0.1:9222/json/version`，控制浏览器前还要核对实例和配置归属；端口可连接不等于接入了正确的配置。
+本地浏览器模式需要已安装的 Microsoft Edge、允许手动认证的图形桌面，以及代理可访问的本机回环调试端点。没有 Edge 时报告相应能力不可用，不以 Chromium 或其他浏览器替代。适用范围以 [AGENTS.md](../AGENTS.md) 和 [research-browser](../research-browser/SKILL.md) 为准。默认检查 `http://127.0.0.1:9222/json/version`，控制浏览器前还要核对实例和配置归属；端口可连接不等于接入了正确的配置。
 
-没有本地浏览器不影响独立的 [web-research](../web-research/SKILL.md) 通过可用工具执行公开搜索、静态网页读取或直接下载公开文件。只有需要本技能的认证或交互访问时，才要求相应浏览器能力。
+没有本地浏览器不影响独立的 [web-research](../web-research/SKILL.md) 通过可用工具执行公开搜索、静态网页读取或直接下载公开文件。只有需要本技能范围内的认证、数据库论文检索或论文下载时，才要求相应浏览器能力；公开页面需要 JavaScript 渲染本身不授权 Edge 操作。
 
 优先复用已有且获授权的研究实例。需要新启动时，使用 [SKILL 中的操作系统启动示例](SKILL.md#connect-to-edge)。普通 Edge 窗口不一定启用了调试接口；不要为了接入调试而关闭无关窗口。
 
-现有可选 helper 位于 `web-reader/scripts/edge_cdp.py`，依赖 Python 和已安装的 `websocket-client`，仅提供 `list`、`inspect`、`download`。导航、表单填写和按任务恢复仍由可用的浏览器工具或 CDP 操作完成，不存在 `restore` 等 helper 子命令。不要将 helper 输出直接当作可长期保存的任务档案。
+旧 `web-reader` Python helper、测试及浏览器参考已删除。导航、表单填写、下载完成检查和按任务恢复由宿主可用的浏览器工具或 CDP 操作完成，不应调用已删除的脚本或假设存在独立的恢复程序。下载完成后仍需检查实际文件、大小和格式；浏览器响应不能直接作为可长期保存的任务档案。
 
 ## 配置与任务记录存在哪里
 
@@ -32,7 +32,7 @@
 | 当前任务恢复记录 | `<workspace>/.agents-work/<task-id>/browser/session.json` | 仅记录经过筛选的页面地址、题名、来源标识和检索进度 |
 | 当前任务索引与证据 | 同一任务的 `index.md`、`downloads/` 等 | 登记文件用途、来源与验证结果，保留需要的下载 |
 
-全局路径按运行浏览器的操作系统和用户解析。WSL/容器里的代理控制 Windows Edge 时，仍使用 Windows 用户的配置，不在 Linux 代理账号下再创建一份。不同系统或不同浏览器不共用一个正在使用的配置目录；Chromium 替代 Edge 时使用单独的 `chromium-research` 配置。
+全局路径按运行浏览器的操作系统和用户解析。WSL/容器里的代理控制 Windows Edge 时，仍使用 Windows 用户的配置，不在 Linux 代理账号下再创建一份。不同系统不共用一个正在使用的配置目录，也不将 Edge 配置交给其他浏览器使用。
 
 任务目录不保存浏览器配置、Cookie、密码、认证跳转地址或 Chromium `Sessions/` 文件。Chromium 自己的历史、缓存和内部会话数据仍可能留在全局配置中；这里分离的是任务恢复记录，不能保证消除所有浏览痕迹。
 
