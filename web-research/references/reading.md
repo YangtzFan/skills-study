@@ -16,7 +16,7 @@
 Choose by access requirements rather than a fixed fallback ladder:
 
 - Public static pages: use an available built-in reader or direct HTTP fetch; extract with an already-installed suitable library. A third-party reader may be used for public pages within the call budget.
-- Website authentication, academic-database paper search, and paper downloads: apply [edge-browser-research](../../edge-browser-research/SKILL.md) only with an available authorized Microsoft Edge environment; retain the same task and budget. Do not substitute Chromium or expand its scope to general web search or arbitrary interactive pages. A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
+- Access outside public reading follows the [router's worker boundaries and sequencing](../../research-browser/SKILL.md#worker-boundaries-and-direct-use). A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
 
 Example static extraction command:
 

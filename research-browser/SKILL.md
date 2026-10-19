@@ -21,6 +21,22 @@ Use `web-research` for public discovery and page extraction, selecting its searc
 
 The router owns cross-skill sequencing, including when a worker is invoked directly for a task that needs additional capabilities. Reuse the active task ID, budget, authorized browser session, and acquired evidence; do not repeat successful access or extraction. For authenticated browser tasks within the allowed scope above, use the browser worker for authentication, academic-database paper search, or paper downloads, then use the page reader only if page extraction is needed. For downloaded source documents, use document ingestion only when their content is needed, followed by document QA for questions about that content; verification alone ends with the download result. Route material images from pages or documents to image analysis when visual evidence is needed. Keep document evidence distinct from external evidence for synthesis, and flag claims that need external verification. If required extracted document evidence is absent, obtain it before document QA; do not fabricate it.
 
+## Worker Boundaries and Direct Use
+
+| Worker | Owns | Completion boundary |
+| --- | --- | --- |
+| `web-research` | Public discovery, page reading, and iterative web evidence gathering | Search candidates, page evidence, or public download verification can each complete the request. |
+| `edge-browser-research` | Authorized Edge access, academic-database discovery, task windows, and browser downloads | Return observed access, candidates, or verified files; extraction is not automatic. |
+| `document-ingest` | Local document extraction, structure, anchors, coverage, and extraction artifacts | An extraction-only request ends with its handoff; QA is needed only for questions about the content. |
+| `document-qa` | Retrieval, answers, citations, and coverage checks over supplied extracted evidence | Existing immediate content or accessible artifacts suffice; do not re-ingest valid evidence. |
+| `image-analysis` | Image OCR, host vision, relay capability/configuration, and visual evidence | A standalone image answer requires no document ID, ingestion, or QA. |
+
+These workers do not require one another for operations within their own boundaries. Direct use reads only the applicable shared artifact, knowledge-base, and external-call policies here; it does not restart classification or trigger a mandatory pipeline. When additional capabilities are needed, use the sequencing in this router and preserve the active task state. For a QA task, select relevant knowledge-base documents here and pass their existing evidence to the worker.
+
+Direct public file downloads use `web-research` without a browser prerequisite. Use the Edge workflow for requested browser-session or institutional paper downloads; public retrieval does not substitute for a requested institutional access test.
+
+Document ingestion may perform local OCR to extract source text. Task-specific interpretation of diagrams, tables, or images, including host/relay vision selection and capability checks, belongs to `image-analysis`; link its handoff into the extraction without duplicating its model workflow. Keep extraction gaps visible if visual analysis is unnecessary or unavailable.
+
 ## Skill Location
 
 This skill pack can be installed globally, for example at `~/.agents/skills/`, or vendored into a project as a submodule. Never assume an absolute install location, and never assume a particular pack directory name.
@@ -111,7 +127,7 @@ Use this case when the task needs extraction or document-grounded evidence from 
 
 1. For source documents other than standalone images that need extraction, apply `../document-ingest/SKILL.md` using immediate mode for one-off questions and persistent mode when reusable artifacts are needed. Reuse current existing ingestion results when available.
 2. Route standalone images directly to `../image-analysis/SKILL.md`; for document pages whose visual content matters, apply it alongside extraction.
-3. When document evidence is involved, apply `../document-qa/SKILL.md` to the immediate extraction handoff or existing document artifacts, including relevant knowledge base documents. For standalone image analysis alone, use the image result directly and do not require ingestion or QA.
+3. For questions about document content, apply `../document-qa/SKILL.md` to the immediate extraction handoff or existing document artifacts, including relevant knowledge base documents. An extraction-only request ends with the ingestion result. For standalone image analysis alone, use the image result directly and do not require ingestion or QA.
 4. Cite each material claim with the most precise available document or image provenance and a short verbatim quote when the source contains text.
 
 If a supplied path is unreadable, report the exact error and do not guess the file's contents.

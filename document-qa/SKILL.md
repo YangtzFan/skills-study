@@ -32,7 +32,7 @@ description: Answer questions from extracted local documents with precise proven
 - For an immediate extraction handoff, inspect its in-memory content and anchors directly; apply the same coverage and evidence rules without requiring `content.md` or `chunks.md`.
 - Authorized remote retrieval calls follow the Shared External Call Budget in `../research-browser/SKILL.md`; configuration does not reset that budget.
 
-- Read `.agents-work/knowledge/index.md` when the question may concern project background (reuse an already-read unchanged index), and include the relevant knowledge base documents alongside any documents ingested for the current task.
+- Use the document set supplied for the question, including knowledge-base evidence selected under the [router's knowledge-base policy](../research-browser/SKILL.md#project-knowledge-base). Do not expand the source set merely because other artifacts exist.
 - For persisted documents with no more than 30 chunks, read `content.md` in full when the context window permits.
 - For larger persisted documents or multiple documents, retrieve approximately 20 candidate sections from `chunks.md` with local keyword or BM25 search. For large immediate handoffs, use their structural sections or in-memory chunks instead. Optionally use embeddings or reranking only after satisfying the Security and Privacy requirements, and retain the best `top_k` evidence chunks for a targeted question.
 - Preserve `chunk_id`, page, section, sheet, or slide metadata throughout retrieval.

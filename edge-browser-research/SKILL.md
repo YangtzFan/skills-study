@@ -1,6 +1,6 @@
 ---
 name: edge-browser-research
-description: Use a local Edge or Chromium debugging session for authenticated website research and source-document downloads, including campus-library databases. Use when the user can access a site in Edge but remote readers cannot, or asks to connect, inspect, search, or verify downloads through that session. Do not use for ordinary public-page reading or unrelated browser/account administration.
+description: Use an authorized local Microsoft Edge session for website authentication, academic-database paper search, and paper downloads, including campus-library databases. Requires available Edge browser tools or a loopback debugging session. Do not use for general web search, ordinary public-page reading, or unrelated browser/account administration.
 ---
 
 # Edge Browser Research
@@ -96,7 +96,7 @@ Linux (Bash, in the user's graphical desktop session):
 )
 ```
 
-On Linux, use an available graphical session for manual authentication. If none is available, report that limitation or connect to an already authorized reachable loopback session; do not silently switch to headless mode or add `--no-sandbox`. If using Chromium instead of Edge, explicitly identify the substitution and use a separate persistent sibling profile (`chromium-research`); do not open an Edge profile with a different browser.
+On Linux, use an available graphical session for manual authentication. If none is available, report that limitation or connect to an already authorized reachable loopback session; do not silently switch to headless mode or add `--no-sandbox`.
 
 Do not pass `--restore-last-session`. For the dedicated research profile, check Edge's own startup setting when establishing this workflow; configure it through the normal settings interface to open a new tab rather than resume the previous session. Do not change the ordinary Edge profile or edit live preference/session databases. Explicit `about:blank` and `--new-window` arguments alone do not prove that startup settings, policy, or crash recovery cannot reopen old pages. Verify the actual windows after launch; follow the task-session reference if old pages reappear.
 
@@ -106,10 +106,10 @@ The user may verify that `http://127.0.0.1:9222/json/version` opens. The agent s
 
 ## Inspect and research
 
-Read the [local browser mechanics reference](../web-reader/references/local-browser.md) for helper commands, download configuration, completion checks, and implementation limits. The shared helper supports only `list`, selected-page `inspect`, and `download`; use current target IDs from the live session.
+Use the browser tools exposed by the host or available local CDP capabilities; this skill has no bundled browser helper. Inspect the actual tool/protocol schema and use current target IDs from the live session.
 
 - Use a native browser tool for navigation, form filling, search submission, and rendered controls when available. Otherwise use local CDP `Target.createTarget`, `Page.navigate`, and `Runtime.evaluate` within the user's authorized task. For approved clicks that open a tab or download, set `userGesture: true`. Wait for the resulting state rather than assuming `.click()` succeeded.
-- The helper does not implement a general search/form automation API. Do not invent nonexistent subcommands. Use an available CDP/browser capability or state the missing capability precisely.
+- Do not invent helper subcommands or assume a general search/form API exists. Use an available CDP/browser capability or state the missing capability precisely.
 - Navigate through the actual library entry point, preserving the resulting session and proxy host. Do not substitute an unproxied publisher address when the authorized page uses a library proxy.
 - Before using extracted text, check visibility. A CAPTCHA transcript can remain in an off-screen DOM after verification; `innerText` or a nonzero element rectangle alone does not prove the challenge is active. Check its displayed position and the actual blocking page state.
 - Distinguish institutional access from personal-account login. Labels such as an institution name or “Access provided by” support session recognition, but actual article/download access still requires testing. A download can complete even if an auxiliary tab subsequently displays a login page; check completed files before reporting failure.
@@ -117,7 +117,9 @@ Read the [local browser mechanics reference](../web-reader/references/local-brow
 
 ## Download and verify
 
-Use the download procedure in the local browser reference, with the same task ID and budget. Choose the actual clickable control, rather than a containing span. Preserve the actual source format; for the helper, `--format caj` checks CAJ/KDH markers.
+Before triggering a download, create the active task's `downloads/` directory and configure that destination through an available browser tool or a supported CDP download-setting command. Coordinate browser-wide settings with other task windows. Choose the actual clickable control, rather than a containing span, and observe its resulting navigation or download state before retrying.
+
+Verify completion through available download events/history and the actual saved file; report a limitation if completion cannot be established. Check that the file is nonempty and matches the expected format rather than a login/error page; record its path, size or hash, and sanitized source in the task index. Preserve the actual format, checking PDF or CAJ/KDH signatures as applicable; a renamed extension does not convert a file or prove parser support. Retain the same task ID and shared budget.
 
 When full text of an external paper is needed, download and verify it in the task `downloads/` directory before reading it, preferring an authorized PDF. If PDF is unavailable, retain a permitted source in its actual format; do not persist authentication data. If a valid full-text file cannot be saved, report the limitation and do not claim full-text review from a preview. Abstract or metadata review alone does not require downloading the full paper.
 
@@ -133,6 +135,6 @@ When full text of an external paper is needed, download and verify it in the tas
 
 ## Validation
 
-Helper commands and offline regression checks are maintained in the local browser reference. Validate modified automation with relevant offline checks; live site tests require the task's authorization and budget. A tested article verifies only that session, article, and file format, not every database entitlement or parser.
+Validate modified automation with relevant checks for the actual browser tool or CDP implementation; live site tests require the task's authorization and budget. A tested article verifies only that session, article, and file format, not every database entitlement or parser.
 
 For task-session changes, also use the acceptance checks in the task-session reference. Report profile reuse, task-page restoration, and current site authentication as separate results; restored tabs or an existing Cookie database do not establish a valid login.

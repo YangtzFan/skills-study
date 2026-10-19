@@ -16,9 +16,13 @@
 
 `.system/` 中的宿主技能提供技能创建/安装、官方产品文档、图片生成等能力，不属于上述研究流水线。图片生成制作素材，图片分析解释证据；普通技能文件审查不因提及 Codex 而要求在线产品文档检索。
 
+宿主专用技能保留各自的操作流程和来源选择；官方文档工具无需替换成强制的通用搜索流程，生成的产品素材也不自动成为研究工件。
+
 ## 路由与交接
 
 [AGENTS.md](AGENTS.md) 是全局轻量入口：所有请求应用 `critical-reasoning`；研究、文档证据、图片证据和知识库维护才加载 `research-browser`。代码、配置、提示词和技能审查直接读取文件；已有证据足够的后续问题不重复检索或抽取。
+
+跨技能职责分配与调用顺序以 [AGENTS.md](AGENTS.md) 和 [research-browser 的职责边界](research-browser/SKILL.md#worker-boundaries-and-direct-use) 为准；各技能保留自身的输入、操作、输出和能力约束，可按职责直接使用。读取共享约定不会强制重启路由或串联其他技能，只在目标需要额外能力或缺失输入证据时交接。
 
 `critical-reasoning` 按任务需要分配检查力度：简单编辑、翻译与创作侧重意图和约束，不强制联网或套用论证模板；复杂或后果重大的问题核查关键假设、替代解释及可能改变结论的证据。缺失信息会实质影响结果且没有合理默认值时才澄清，否则按必要的明确假设继续。
 
@@ -29,13 +33,16 @@ AGENTS.md -> critical-reasoning（所有请求）
          -> research-browser（需要研究或证据处理时）
               公开搜索、网页读取与多轮研究：web-research
               网页认证、数据库论文检索和论文下载：edge-browser-research（需 Edge）
-              页面正文：web-research 读取模式 -> 必要时 image-analysis
-              文档问答：document-ingest -> document-qa
+              页面正文：web-research 读取模式
+              文档抽取：document-ingest
+              文档问答：document-qa（缺少抽取证据时才先抽取）
               独立图片：image-analysis
               混合来源：research-browser 综合各项证据
 ```
 
-指定 URL 直接使用 `web-research` 的读取模式，只有需要发现额外来源时才搜索；仅搜索请求可返回候选来源而不逐页读取。学术数据库论文检索通过获授权的 Edge 环境进行；需要网页正文时交给 `web-research`，需要论文内容时交给 `document-ingest` 和 `document-qa`。仅验证下载无需全文抽取。所有交接延续任务 ID、预算与已有证据；回读共享规则不重新启动路由。
+指定 URL 直接使用 `web-research` 的读取模式，只有需要发现额外来源时才搜索；仅搜索请求可返回候选来源而不逐页读取。公开文件直接下载由 `web-research` 完成；用户要求通过浏览器会话或机构访问下载论文时使用 Edge，公开下载不能替代机构权限验证。学术数据库论文检索通过获授权的 Edge 环境进行；需要网页正文时交给 `web-research`，需要文档抽取时交给 `document-ingest`，针对内容提问时才使用 `document-qa`。仅验证下载无需全文抽取。所有交接延续任务 ID、预算与已有证据；回读共享规则不重新启动路由。
+
+仅抽取文档可在抽取结果处结束；已有抽取证据的问答无需重复抽取，独立图片分析无需文档 ID 或文档问答。文档抽取可使用本地 OCR 获取文字；页面或文档中的图表解读、宿主视觉和中转模型能力检查由 `image-analysis` 负责，抽取流程保留其来源标记和未覆盖内容。
 
 `web-research` 合并了原 `web-search` 和 `web-reader` 的技能入口，规则见[搜索](web-research/references/search.md)、[读取](web-research/references/reading.md)和[多轮研究](web-research/references/research.md)。快速查询聚焦检索和核实；比较、争议问题和明确研究请求按子问题检索、读取原始来源，再针对重要证据缺口继续追查。研究深度不会自动增加共享预算；后续问题复用证据和计数。
 

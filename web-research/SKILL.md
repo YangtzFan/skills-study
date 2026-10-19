@@ -1,6 +1,6 @@
 ---
 name: web-research
-description: Search the public web, read specified pages, and conduct iterative research with traceable evidence. Use for web searches, current information, comparisons, fact checking, URL reading, and public source downloads. General web search never uses Edge; website authentication and academic-database paper search/downloads require edge-browser-research and an available Edge environment.
+description: Search the public web, read specified public pages, and conduct iterative research with traceable evidence. Use for web searches, current information, comparisons, fact checking, URL reading, and direct public downloads. Does not control authenticated browser sessions.
 ---
 
 # Web Research
@@ -20,13 +20,13 @@ Combine public source discovery and page reading within one task. Use either mod
 - For a supplied URL, go directly to [reading guidance](references/reading.md). Do not search unless additional sources are needed. Reuse previously fetched content instead of fetching it again.
 - For a question requiring external evidence, search if needed, then read the relevant sources. Search snippets identify candidates and do not establish that the full pages have been read. Choose coverage proportionate to the question rather than a fixed source count.
 - Public search, static-page reading, and direct public downloads do not require Edge, Chromium, CDP, a local browser profile, Python, or websocket-client as skill-wide prerequisites. Use available host tools or direct HTTP with an already-installed suitable extractor. Missing one method does not disable other available methods; do not install dependencies or probe local browser ports for an ordinary static-page request.
-- General web search always stays in this skill; never operate a search engine in Edge, including as a fallback. Apply [edge-browser-research](../edge-browser-research/SKILL.md) only for website authentication, academic-database paper search, or paper downloads, and only with an available authorized Microsoft Edge environment. Do not substitute Chromium. A JavaScript-dependent public page alone does not authorize Edge interaction; use a permitted public reader or report incomplete access. Public search cannot substitute for requested institutional database search.
+- Access requiring another capability follows the [router's worker boundaries and sequencing](../research-browser/SKILL.md#worker-boundaries-and-direct-use). A JavaScript-dependent public page alone does not authorize browser interaction; use a permitted public reader or report incomplete access.
 
 ## Search, read, and answer
 
 1. Reuse the active task ID, evidence, and shared [research-browser contract and external-call budget](../research-browser/SKILL.md), including when invoked directly. Loading references or changing modes never resets counters or restarts research routing.
 2. Discover and rank sources when needed. Prefer primary sources and authoritative material, with recency weighted when the question is time-sensitive.
-3. Read enough relevant content to support the requested answer. Preserve exact supporting passages and distinguish full-page evidence from metadata or abstracts. For downloaded documents whose contents are needed, use [document-ingest](../document-ingest/SKILL.md), then [document-qa](../document-qa/SKILL.md); download verification alone requires neither. Route material visual evidence to [image-analysis](../image-analysis/SKILL.md) when needed.
+3. Read enough relevant page content to support the requested answer. Preserve exact supporting passages and distinguish full-page evidence from metadata or abstracts. Return downloaded files and material images with provenance and coverage gaps for any further processing selected by the router.
 4. If reading reveals a material evidence gap, refine discovery only within the remaining shared budget and the search reference's query-rewrite limit. Do not turn each gap into a new retry allowance. Cross-check consequential claims independently when practical; identify unresolved conflicts or missing coverage.
 5. Answer naturally with descriptive links attached to supported claims. Preserve native tool citations when available; otherwise use verified source URLs. Cite the page that supports the adjacent claim, including its version/date where material. Report material access failures and distinguish downloaded, format-verified, and content-extracted states. Internal schemas in the references are handoff formats, not mandatory user-facing JSON.
 
