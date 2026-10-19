@@ -1,14 +1,12 @@
-# Web Reader
+# Reading mode
 
-## When to Use
-
-- Use this skill when the full content of a specified page is needed, including when a search-result snippet is insufficient to support the answer.
+This is an internal `web-research` reference, not a separate skill. Read the supplied/selected page deeply enough to support the requested claims and report the actual inspected scope.
 
 ## Access
 
-- Use available public URL readers, direct HTTP, or available real browsers for public pages. JavaScript-dependent pages may use [public-browser guidance](public-browser.md) within the authorized public-reading task. General web search remains owned by `web-research`, including when the selected browser is Edge; authenticated and institutional academic-browser work follows the dedicated Edge worker.
+- Use available public URL readers, direct HTTP, or real browsers. JavaScript-dependent pages may use [public-browser guidance](public-browser.md) within the authorized public-reading task.
 - Save an HTTP-served PDF under the task `downloads/` directory. Download verification does not establish that its contents have been extracted.
-- Before reading an external paper's full text, download and verify the source in the task `downloads/` directory, preferring an authorized PDF. If PDF is unavailable, preserve a permitted full-text source in its actual format, including standalone HTML when necessary, without authentication data. If a valid full-text file cannot be saved, report the limitation and do not use an unsaved preview as a full-text review. Abstracts and metadata may still be read with their scope identified; user-provided local papers need no re-download.
+- Full-text paper reading follows the shared [retained-source rule](../../research-browser/SKILL.md#work-directory-contract). Label metadata/abstract evidence when no validated full-text file is available.
 - Do not forward private, authenticated, signed, or token-bearing URLs to a third-party reader service.
 
 ## Preferred Tools
@@ -31,10 +29,9 @@ After obtaining a source file, report its download status; page-extraction steps
 
 Reuse page content already supplied by the browser or another reader, subject to the paper full-text download requirement above.
 
-1. Inspect the response content type, final URL, and size before processing the body when the selected tool exposes that information. Follow normal HTTP or visible page redirects and verify that the final page contains the intended source. A search-result wrapper, homepage, blank page, or Loading shell is not the source body; record it as unread when navigation never reaches the text.
-2. If the resource is a PDF, save it under `.agents-work/<task-id>/downloads/` and register it in the task index. For download verification, validate the response and file format without claiming its full contents have been read. Retain user-requested downloads.
-   For CAJ/KDH or other source formats, preserve the actual format and report download and extraction capabilities separately. Authorized paper downloads through Edge belong to the browser skill.
-3. Fetch the page and extract its main content while excluding navigation, advertisements, cookie notices, and repetitive footers.
+1. Reuse an existing response or fetch the resource once with the chosen method. Inspect content type, final URL, and size when exposed. Follow normal HTTP or visible page redirects and verify the intended source. A wrapper, homepage, blank page, or Loading shell is unread evidence when navigation never reaches the text.
+2. For a binary source, save it under `.agents-work/<task-id>/downloads/`, verify its actual format and completion, and register it in the task index. Return a download handoff; the remaining steps apply to HTML. Preserve CAJ/KDH and other formats without renaming them as conversion.
+3. Extract the main HTML content from the response already obtained, excluding navigation, advertisements, cookie notices, and repetitive footers.
 4. Preserve meaningful headings, lists, tables, links, and code blocks.
 5. Capture the title, author, publication date, and site name when the page provides them.
 6. Retain verbatim passages that directly support the claims for which the page will be cited.
@@ -46,7 +43,8 @@ Record whether evidence is a search snippet, abstract, inspected section, or ful
 
 ## Work Directory
 
-- When page content or evidence must be persisted, write it to `.agents-work/<task-id>/web/<source-id>.md` at the workspace root and register it in the task's `index.md`.
+- When page content or evidence must be persisted, write it to `.agents-work/<task-id>/web/<source-id>.md` and register it in the task index. Derive `source-id` from a SHA-256 of the sanitized canonical source URL (normally its first 12 hexadecimal characters, extending on collision). Preserve identity-bearing version/language/article parameters; hostname or title alone is insufficient. If the URL cannot be retained safely, use a public source ID and record that limitation.
+- On refresh, append a dated snapshot or use a dated/version suffix and update the index; do not silently overwrite evidence used by earlier claims. Reuse unchanged existing evidence instead of creating duplicate files.
 - Include the original URL, final URL, retrieval time, available publication metadata, selected quotations, and extracted content in the Markdown file.
 - Store notes and extracted evidence as Markdown. Downloaded sources belong in `downloads/` and necessary local processing files in `intermediates/` under the shared `research-browser` contract; do not persist raw response dumps or authentication data.
 - If a tool requires operating-system temporary storage, move retained downloads into the task `downloads/` directory after processing. Remove only disposable temporary copies after successful processing.
@@ -81,7 +79,7 @@ For an internal extraction handoff, use this structure. For a download-only task
 - Distinguish the publication date from modification, retrieval, and copyright dates.
 - Recheck volatile facts when the requested time differs from cached evidence. Label archived or superseded material; do not call an answer current based only on a recent retrieval timestamp.
 - Return the observed HTTP status and a concise explanation when access is blocked or paywalled; use `null` if the browser does not expose a status. Sanitize both original and final URLs before handoff or persistence.
-- Infer institutional access from the actual page/session state; infer download success from a completed file and format checks. A homepage logo, download button, or successful configuration call alone is insufficient. Avoid logging token-bearing links; use sanitized public identifiers such as a DOI or article ID for durable provenance.
+- Record only the access state actually observed. A homepage logo or download button alone does not establish article access or file completion. Use sanitized public identifiers such as DOI/article IDs for durable provenance.
 
 ## Failure and Security
 

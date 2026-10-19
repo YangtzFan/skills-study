@@ -1,9 +1,6 @@
-# Web Search
+# Search mode
 
-## When to Use
-
-- Use this skill when the user explicitly requests a web search or when the answer depends on current external information.
-- Use it to discover and rank public-web candidate URLs; search snippets are not full-page evidence.
+This is an internal `web-research` reference, not a separate skill. It discovers and ranks public candidate URLs; snippets do not establish that a source body was read.
 
 ## Search Providers
 
@@ -21,11 +18,9 @@ Discover only capabilities available in the current environment. Prefer a config
 - A public site's search form or scripts it actually references may identify a public search endpoint. Use only observed endpoints, parameters, and access scope; do not invent APIs, export authentication, or continue a path after 403/authorization failure.
 - Verify relevant natural search entries independently of HTTP status, query echo, result count, suggested searches, trending panels, or generated answers. Record source-body reading separately. Search operators may be relaxed or ignored by an engine, so inspect whether the results meet the query.
 
-### Dated observations, not availability guarantees
+## Environment-dependent methods
 
-In tests on 2026-10-19, 360's ordinary HTML search at `https://www.so.com/s` with query parameter `q` returned relevant candidates. Baidu at `https://www.baidu.com/s` with parameter `wd` returned relevant results in two new homepage/Cookie/header sessions after default requests had produced blank or verification pages. These were combined method tests, not proof that any single header caused success.
-
-In the same environment, Bing HTML and RSS were readable but irrelevant to the queries; Yahoo returned HTTP 500. Google header/Cookie changes, `/ncr`, client parameters, visible fallback links, and curl HTTP/2 did not restore results. Real Firefox passed the JavaScript-only limitation but reached Google's unusual-traffic page. These observations are examples for diagnosis, not permanent engine rankings, a Google workaround, or evidence that TLS impersonation, proxy rotation, or automated CAPTCHA solving works.
+Treat a successful engine/session as a dated observation, not a permanent availability guarantee. Cookie/header experiments do not establish which change caused success. Distinguish readable but irrelevant results, blank bodies, HTTP errors, JavaScript shells, and explicit verification before choosing a bounded alternative.
 
 ## Query Strategy
 

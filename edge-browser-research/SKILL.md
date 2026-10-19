@@ -1,17 +1,17 @@
 ---
 name: edge-browser-research
-description: Use an authorized local Microsoft Edge session for website authentication, academic-database paper search, and paper downloads, including campus-library databases. Requires available Edge browser tools or a loopback debugging session. Do not use for general web search, ordinary public-page reading, or unrelated browser/account administration.
+description: Operate an authorized local Microsoft Edge research session for website authentication, academic-database paper search, task-window restoration, and verified paper downloads.
 ---
 
 # Edge Browser Research
 
 Use the user's authorized local browser session for the requested sites. Establish connection, institutional access, download completion, and document readability as separate observations.
 
-## Boundary with public browsing
+## Contract and inputs
 
-This worker owns authorized website authentication, academic-database paper search, and paper downloads in that Edge workflow. General public search and ordinary public-page reading belong to [web-research](../web-research/SKILL.md), even when its chosen browser is Microsoft Edge. Browser brand alone does not invoke this skill. Its Edge-only requirement does not restrict the public worker's use of Firefox, Chrome, Chromium, or Edge.
+Accept the authorized sites/entry points, requested access test/search/download, and any existing task/session record. Direct invocation can end with observed access, candidates, or verified files; it needs no prior web search or subsequent extraction. Responsibility assignment and cross-skill handoffs live in [AGENTS](../AGENTS.md) and the [router](../research-browser/SKILL.md#routing-and-handoffs).
 
-Public search CAPTCHAs alone do not trigger this authentication workflow; the public worker handles verification state under its own guidance. When the task actually needs authenticated or institutional access, follow this skill with the applicable authorization and retain the active task and budget. Do not attach a public-search task to this worker's persistent authenticated profile, export its Cookies to an HTTP client, or delete that profile during public-task cleanup. The public worker's temporary-session rules do not replace this skill's profile and task-window rules.
+This workflow requires available Microsoft Edge and authorized browser control. Inspect only task-relevant pages, preserve unrelated windows, and retain the dedicated authenticated profile. A reachable endpoint alone is not authorization. Existing authorization carries forward; ask only for genuinely missing access or permissions.
 
 ## Choose the access path
 
@@ -127,14 +127,14 @@ Before triggering a download, create the active task's `downloads/` directory an
 
 Verify completion through available download events/history and the actual saved file; report a limitation if completion cannot be established. Check that the file is nonempty and matches the expected format rather than a login/error page; record its path, size or hash, and sanitized source in the task index. Preserve the actual format, checking PDF or CAJ/KDH signatures as applicable; a renamed extension does not convert a file or prove parser support. Retain the same task ID and shared budget.
 
-When full text of an external paper is needed, download and verify it in the task `downloads/` directory before reading it, preferring an authorized PDF. If PDF is unavailable, retain a permitted source in its actual format; do not persist authentication data. If a valid full-text file cannot be saved, report the limitation and do not claim full-text review from a preview. Abstract or metadata review alone does not require downloading the full paper.
+Full-text review follows the shared [retained-source rule](../research-browser/SKILL.md#work-directory-contract). Access tests, metadata discovery, and download-only requests need no automatic full-text extraction.
 
 - If the publisher opens a PDF preview rather than downloading, inspect the preview's iframe/embed source. Use the normal download control, or a same-session browser retrieval when the user authorized the file. Validate the response before writing; do not send its authenticated URL to a remote reader or silently export browser cookies into a separate HTTP client.
 - Report per-database results separately. One successful article does not prove access to every journal, year, degree thesis, or file format. Download verification does not establish document readability.
 
 ## Stop conditions and output
 
-- Follow the shared external-call and spending budget. Local DOM checks consume no external attempts; navigation and file retrieval do. Do not blindly repeat a click when a login page, preview, challenge, cancellation, or timeout explains the missing download.
+- Follow the shared external-call and spending budget. Local DOM checks consume no external attempts; navigation and file retrieval do. Do not blindly repeat a click when a login page, preview, challenge, cancellation, or timeout explains the missing download. If a download is still pending, use an observable completion event or bounded wait instead of starting a duplicate.
 - Authentication failures require a changed/verified session before retrying. Let the user complete challenges; do not automate CAPTCHA solving or bypass subscription restrictions.
 - Return sanitized results appropriate to the task: discovery candidates (title, stable URL/ID, relevance); page evidence (URL, exact passages and anchors, observed access/coverage); or downloads (saved path, source ID/URL, completion, size/hash, format checks). Do not invent HTTP status or extraction results. Return actual results and remaining limitations in the user's language.
 - Checkpoint the current task's safe pages and progress before an authorized close. Close only its verified owned targets/windows and retain the persistent global profile. Do not use browser-wide `Browser.close`, terminate all Edge processes, or close another task's window as routine cleanup; those actions require an explicit user request covering them.
