@@ -1,8 +1,3 @@
----
-name: web-search
-description: Search the public web and return ranked candidate sources with structured metadata. Use for current facts, news, official documentation, repositories, market information, and academic discovery, but not for reading full pages.
----
-
 # Web Search
 
 ## When to Use
@@ -67,7 +62,7 @@ For an internal handoff, use the following structure. In a user-facing answer, p
 
 ## Failure and Security
 
-- Apply the Shared External Call Budget in `../research-browser/SKILL.md`, including when this skill is invoked directly. Provider changes, network retries, and query rewrites share the same logical-operation and task counters.
+- Apply the Shared External Call Budget in `../../research-browser/SKILL.md`. Provider changes, network retries, and query rewrites share the same logical-operation and task counters.
 - Retry transport failures only as allowed by that policy. Rewrite a query at most once when usable results are inadequate; do not rewrite to work around authentication or transport errors.
 - Stop retries with the same credentials on authentication or authorization errors. A known authorized alternative provider may be used within the remaining budget; never invent credentials or a provider endpoint.
 - If available methods or the budget are exhausted, return any usable results, explain the limitation and attempt count, and request a source URL when appropriate. Return an empty `results` array only when no usable results were obtained.

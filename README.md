@@ -8,8 +8,7 @@
 | --- | --- |
 | [critical-reasoning](critical-reasoning/SKILL.md) | 每个请求的前提、证据、不确定性与回答质量检查。 |
 | [research-browser](research-browser/SKILL.md) | 研究路由、跨来源综合、工件与外部调用预算的唯一规则来源。 |
-| [web-search](web-search/SKILL.md) | 公开网络发现候选来源，不把搜索摘要当成正文证据。 |
-| [web-reader](web-reader/SKILL.md) | 指定网页的正文、元数据、原文引用和来源交接。 |
+| [web-research](web-research/SKILL.md) | 公开网络搜索、指定网页读取与有来源的回答；搜索和读取可独立使用，无 Edge 前置依赖。 |
 | [edge-browser-research](edge-browser-research/SKILL.md)（[使用说明](edge-browser-research/README.md)） | 本地 Edge/Chromium 认证检索、论文下载验证、全局配置复用与按任务恢复窗口。 |
 | [document-ingest](document-ingest/SKILL.md) | 文档抽取、结构与定位信息、即时或持久化交接。 |
 | [document-qa](document-qa/SKILL.md) | 基于抽取结果检索、回答、引用，并核对覆盖范围。 |
@@ -24,15 +23,17 @@
 ```text
 AGENTS.md -> critical-reasoning（所有请求）
          -> research-browser（需要研究或证据处理时）
-              公开发现：web-search -> web-reader
+              公开搜索与网页读取：web-research（搜索 / 读取）
               机构数据库：edge-browser-research -> 候选/页面证据/下载记录
-              页面正文：web-reader -> 必要时 image-analysis
+              页面正文：web-research 读取模式 -> 必要时 image-analysis
               文档问答：document-ingest -> document-qa
               独立图片：image-analysis
               混合来源：research-browser 综合各项证据
 ```
 
-指定 URL 直接读取，只有需要发现额外来源时才搜索。机构数据库通过本地浏览器检索；需要网页正文时交给 `web-reader`，需要论文内容时交给 `document-ingest` 和 `document-qa`。仅验证下载无需全文抽取。所有交接延续任务 ID、预算与已有证据；回读共享规则不重新启动路由。
+指定 URL 直接使用 `web-research` 的读取模式，只有需要发现额外来源时才搜索；仅搜索请求可返回候选来源而不逐页读取。机构数据库通过本地浏览器检索；需要网页正文时交给 `web-research`，需要论文内容时交给 `document-ingest` 和 `document-qa`。仅验证下载无需全文抽取。所有交接延续任务 ID、预算与已有证据；回读共享规则不重新启动路由。
+
+`web-research` 合并了原 `web-search` 和 `web-reader` 的技能入口，详细规则分别保存在其 `references/search.md` 和 `references/reading.md`。没有 Edge/Chromium 的机器仍可通过可用搜索工具、HTTP 或公共阅读工具执行公开检索、静态网页读取和公开文件下载；需要交互、渲染或机构认证时，才按能力转入独立的 `edge-browser-research`。缺失某种浏览器能力只限制相应访问方式。原 `web-reader/scripts/` 和 `web-reader/references/local-browser.md` 保留为兼容资源，不再作为独立技能发现。
 
 文档一次性问答默认 `immediate`：内容、定位与覆盖限制在内存中交接，工件路径为 `null`。需要复用时使用 `persistent`，生成 `content.md`、`chunks.md`、`metadata.md`。内部结构化交接不要求最终回复输出 JSON。
 
