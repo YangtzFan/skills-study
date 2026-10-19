@@ -6,7 +6,7 @@
 
 ## Access
 
-- Use browser automation for JavaScript-dependent or interactive pages when that capability is available.
+- Use available public URL readers or direct HTTP for public pages. JavaScript dependence alone does not permit Edge automation. General web search must never be performed in Edge.
 - Save an HTTP-served PDF under the task `downloads/` directory. Download verification does not establish that its contents have been extracted.
 - Before reading an external paper's full text, download and verify the source in the task `downloads/` directory, preferring an authorized PDF. If PDF is unavailable, preserve a permitted full-text source in its actual format, including standalone HTML when necessary, without authentication data. If a valid full-text file cannot be saved, report the limitation and do not use an unsaved preview as a full-text review. Abstracts and metadata may still be read with their scope identified; user-provided local papers need no re-download.
 - Do not forward private, authenticated, signed, or token-bearing URLs to a third-party reader service.
@@ -16,8 +16,7 @@
 Choose by access requirements rather than a fixed fallback ladder:
 
 - Public static pages: use an available built-in reader or direct HTTP fetch; extract with an already-installed suitable library. A third-party reader may be used for public pages within the call budget.
-- Interactive, authenticated, or institution-authorized pages: use an authorized local browser session when available. A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
-- Read [local browser mechanics](../../web-reader/references/local-browser.md) when browser download implementation details are needed. Apply [edge-browser-research](../../edge-browser-research/SKILL.md) for local browser access and interaction; retain the same task and budget.
+- Website authentication, academic-database paper search, and paper downloads: apply [edge-browser-research](../../edge-browser-research/SKILL.md) only with an available authorized Microsoft Edge environment; retain the same task and budget. Do not substitute Chromium or expand its scope to general web search or arbitrary interactive pages. A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
 
 Example static extraction command:
 
@@ -33,12 +32,16 @@ Reuse page content already supplied by the browser or another reader, subject to
 
 1. Inspect the response content type, final URL, and size before processing the body when the selected tool exposes that information.
 2. If the resource is a PDF, save it under `.agents-work/<task-id>/downloads/` and register it in the task index. For download verification, validate the response and file format without claiming its full contents have been read. Retain user-requested downloads.
-   For CAJ/KDH or other source formats, preserve the actual format and report download and extraction capabilities separately. Browser download mechanics belong to the linked local-browser reference.
+   For CAJ/KDH or other source formats, preserve the actual format and report download and extraction capabilities separately. Authorized paper downloads through Edge belong to the browser skill.
 3. Fetch the page and extract its main content while excluding navigation, advertisements, cookie notices, and repetitive footers.
 4. Preserve meaningful headings, lists, tables, links, and code blocks.
 5. Capture the title, author, publication date, and site name when the page provides them.
 6. Retain verbatim passages that directly support the claims for which the page will be cited.
 7. Identify material images whose content is not captured by text extraction and preserve their provenance.
+
+For long pages, use available find, section, line-range, or pagination controls to inspect the passages relevant to the question and their surrounding context. Follow article pagination when necessary; do not mistake the first chunk, an abstract, or a truncated tool response for the complete source. Reuse obtained content and use focused reads instead of repeatedly fetching the entire page. Missing text is a coverage gap, not evidence that the source omits the topic.
+
+Record whether evidence is a search snippet, abstract, inspected section, or full content. For each consequential claim retain its supporting passage and heading/page/line locator when available. Inspect table headings, units, footnotes, and applicable version or jurisdiction before extracting a number or rule. A local paragraph index is a locator for the extracted copy, not a fabricated website anchor.
 
 ## Work Directory
 
@@ -75,6 +78,7 @@ For an internal extraction handoff, use this structure. For a download-only task
 - Preserve the source wording exactly inside `quotes`.
 - Use `null` when the author or publication date is unavailable, and do not infer missing metadata.
 - Distinguish the publication date from modification, retrieval, and copyright dates.
+- Recheck volatile facts when the requested time differs from cached evidence. Label archived or superseded material; do not call an answer current based only on a recent retrieval timestamp.
 - Return the observed HTTP status and a concise explanation when access is blocked or paywalled; use `null` if the browser does not expose a status. Sanitize both original and final URLs before handoff or persistence.
 - Infer institutional access from the actual page/session state; infer download success from a completed file and format checks. A homepage logo, download button, or successful configuration call alone is insufficient. Avoid logging token-bearing links; use sanitized public identifiers such as a DOI or article ID for durable provenance.
 
