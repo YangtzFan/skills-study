@@ -15,6 +15,7 @@ Apply these instructions to every request. Higher-priority host instructions and
 | Extract a local source document into text, structure, and provenance | [document-ingest](document-ingest/SKILL.md) |
 | Answer from supplied document text or existing extraction artifacts | [document-qa](document-qa/SKILL.md) |
 | Interpret an image, screenshot, diagram, or scanned page | [image-analysis](image-analysis/SKILL.md) |
+| Convert Markdown into a new Word document or write it into an existing `.docx` or template | [word-write](word-write/SKILL.md) |
 | Write, extend, or polish Chinese science and engineering study notes or lecture material with gradual, intuitive explanations | [intuitive-study-notes](intuitive-study-notes/SKILL.md) |
 | Combine these capabilities, select project background evidence, or maintain the project knowledge base | [research-browser](research-browser/SKILL.md) |
 | Review/edit code, configuration, prompts, or skills; stable explanations; follow-ups with sufficient existing evidence | Direct task execution; no research workflow |

@@ -13,6 +13,7 @@
 | [document-ingest](document-ingest/README.md) | 抽取本地文档，保留结构、出处与覆盖限制 | [SKILL.md](document-ingest/SKILL.md) |
 | [document-qa](document-qa/README.md) | 根据可读文档回答、引用与核对内容 | [SKILL.md](document-qa/SKILL.md) |
 | [image-analysis](image-analysis/README.md) | 图片文字识别、视觉解释与证据核对 | [SKILL.md](image-analysis/SKILL.md) |
+| [word-write](word-write/SKILL.md) | 将 Markdown 转换为新 Word 文档或写入现有文档、模板，保留语义结构并核验格式 | [SKILL.md](word-write/SKILL.md) |
 | [intuitive-study-notes](intuitive-study-notes/README.md) | 编写循序递进、侧重直观理解的中文理工科笔记与讲义 | [SKILL.md](intuitive-study-notes/SKILL.md) |
 
 中文 README 概括用途、使用方式与边界，`SKILL.md` 保留完整执行要求。技能选择以 [AGENTS.md](AGENTS.md) 为准，研究中的跨能力衔接与共享政策由 [research-browser](research-browser/SKILL.md) 维护。
@@ -57,6 +58,14 @@ Reuse loaded instructions until they change.
 各技能的中文 README 提供更具体的输入要求、调用示例和结果说明；直接说明任务与材料也可以由顶层入口选择适用能力。
 
 ## 工件导航
+
+Word 写入示例：
+
+```text
+使用 word-write，将 method.md 的 Markdown 内容转换并写入现有报告的“研究方法”章节，沿用模板样式，另存为报告_更新版.docx。
+```
+
+Word 成品按用户指定位置保存，不要求登记为研究工件或加入知识库。
 
 完整政策由 [research-browser](research-browser/SKILL.md#work-directory-contract) 维护。以下仅说明常见路径：
 
