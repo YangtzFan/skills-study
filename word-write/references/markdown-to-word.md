@@ -25,6 +25,7 @@ This example assumes Pandoc Markdown and a supplied reference file. Choose the a
 | Strong, emphasis, strikethrough, inline code | Corresponding run formatting or character styles; code remains literal |
 | Ordered/unordered/nested lists | Real Word numbering with nesting and intended start/restart values; do not add a second number to already numbered template headings |
 | Blockquotes | Quote paragraphs with suitable indentation; preserve contained blocks |
+| `[!TIP]` and other alert/callout blocks | Distinct supplement/admonition paragraphs or a suitable template style; preserve the type, supplied title, nested blocks, and boundary from the main text; consume the syntax marker |
 | Tables | Editable Word tables with correct header, row/column counts, and supported alignment; report unsupported spanning/layout requirements |
 | Links | Hyperlinks with both display text and target; preserve internal anchors through a supported bookmark mapping or report the gap |
 | Images | Embedded images with aspect ratio preserved; resolve paths and preserve supplied captions/alternative text when supported |
@@ -34,6 +35,8 @@ This example assumes Pandoc Markdown and a supplied reference file. Choose the a
 | Raw HTML, task lists, diagrams, custom extensions | Use supported mappings; make any fallback explicit and preserve substantive content |
 
 Do not convert `$...$` or citation syntax into literal markers when native math or formatted citations are required. Do not invent bibliography records; use supplied reference data. If a diagram needs rendering, use available authorized local tooling or supplied assets and retain the intended meaning; do not execute arbitrary embedded code.
+
+Study notes may combine GitHub-style alerts with math from another Markdown dialect. Verify both extensions explicitly; selecting a GFM reader alone does not establish math support, and a generic blockquote conversion may leave `[!TIP]` visible as text. If alerts are unsupported by the converter, normalize their parsed structure into a labeled supplement while retaining nested equations, lists, and paragraphs. Preserve literal markers inside code examples. Never discard a proof or supplement because it was optional for reading the main text.
 
 Remote images and linked resources are not automatically local assets. Fetch only resources needed for the requested deliverable under applicable access and transfer permissions. Do not follow every link or send local Markdown to a remote renderer implicitly. Report missing assets and avoid declaring a complete conversion when substantive content is absent.
 
