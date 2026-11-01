@@ -1,6 +1,6 @@
 # Iterative web research
 
-Use for explicit research requests, comparisons, multi-part questions, or claims whose uncertainty requires more than a focused lookup. Apply the shared research-browser budget and artifact rules throughout. This workflow does not require additional agents or new integrations.
+Use for explicit public-web research requests, comparisons of public sources, multi-part questions, or claims whose uncertainty requires more than a focused lookup. Apply the shared [external-call budget](../../research-browser/SKILL.md#shared-external-call-budget) and [storage rules](../../research-browser/SKILL.md#work-directory-contract) when applicable. This workflow covers public discovery, reading, and synthesis; it does not require additional agents or new integrations.
 
 ## Frame and allocate
 

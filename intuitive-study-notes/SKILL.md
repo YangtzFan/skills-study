@@ -11,7 +11,7 @@ Help readers understand concepts, follow calculations, and judge when a method a
 
 Accept the topic or outline, requested scope, reader background when supplied, existing notes, and any source text or evidence handoff. For continuation or polishing, inspect the target passage and enough surrounding material to preserve its notation, prerequisites, heading levels, and progression. Ask only when missing material prevents the requested work; a new note on a specified topic does not require an existing file.
 
-Use supplied sources and available knowledge within the request's scope. Preserve source locators and coverage limitations when writing from evidence; distinguish added explanations or examples from claims attributed to a source. Do not fill unreadable or uninspected source passages with invented content. Capability selection and missing-evidence or output-format handoffs follow [AGENTS.md](../AGENTS.md) and [research-browser](../research-browser/SKILL.md#routing-and-handoffs); this writing skill requires no prior research workflow.
+Use supplied sources and available knowledge within the request's scope. Preserve source locators and coverage limitations when writing from evidence; distinguish added explanations or examples from claims attributed to a source. Do not fill unreadable or uninspected source passages with invented content. If a gap prevents the requested continuation or source-based explanation, identify that gap and retain any usable writing.
 
 ## Writing principles
 
@@ -27,4 +27,4 @@ Before delivery, read for continuity, meaningful explanations of key formulas, u
 
 ## Output
 
-Return the requested prose directly for an answer-only task, or write the requested passage/file at its specified destination. Follow the existing Markdown dialect and asset paths when editing notes; preserve unrelated sections. Use Markdown for a Markdown deliverable or a conversion handoff, without requiring a saved intermediate. In Markdown, keep `[!TIP]` supplements within properly quoted blocks, including their paragraphs and formulas, so their boundaries remain clear. For other output formats, preserve the supplement's title, content, and separation from the main explanation.
+Return the requested prose directly for an answer-only task, or write the requested Markdown/text passage or file at its specified destination. Follow the existing Markdown dialect and asset paths when editing notes; preserve unrelated sections. Content prepared for a separate final format may be inline Markdown without a saved intermediate; retain its citations, asset bases, and heading constraints. Keep `[!TIP]` supplements within properly quoted blocks, including their titles, paragraphs, and formulas, so their boundaries from the main explanation remain clear.

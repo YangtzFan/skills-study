@@ -9,13 +9,13 @@ Use the user's authorized local browser session for the requested sites. Establi
 
 ## Contract and inputs
 
-Accept the authorized sites/entry points, requested access test/search/download, and any existing task/session record. Direct invocation can end with observed access, candidates, or verified files; it needs no prior web search or subsequent extraction. Responsibility assignment and cross-skill handoffs live in [AGENTS](../AGENTS.md) and the [router](../research-browser/SKILL.md#routing-and-handoffs).
+Accept the authorized sites/entry points, requested access test/search/download, and any existing task/session record. Return observed access, candidates, inspected page evidence, or verified files according to that operation. Existing task records are optional for a new request; file format verification and content readability remain separate observations.
 
 This workflow requires available Microsoft Edge and authorized browser control. Inspect only task-relevant pages, preserve unrelated windows, and retain the dedicated authenticated profile. A reachable endpoint alone is not authorization. Existing authorization carries forward; ask only for genuinely missing access or permissions.
 
 ## Choose the access path
 
-- Read the applicable global instructions and shared [research-browser contract](../research-browser/SKILL.md). Reuse already-read instructions and continue the same task directory when the research task continues.
+- Reuse existing task state and resolve retained records/downloads under the shared [storage contract](../research-browser/SKILL.md#work-directory-contract). External navigation and retrieval follow the [shared budget](../research-browser/SKILL.md#shared-external-call-budget). Read only applicable policy sections and continue the same task on a follow-up.
 - Inspect available browser tools and local runtimes. Reuse a usable browser tool or an existing Edge CDP endpoint before recommending MCP installation or new dependencies.
 - This workflow does not authorize unrelated tabs, account changes, proxy changes, credential export, or third-party uploads. The user enters passwords, MFA, and CAPTCHA directly in the browser. Continue after authentication is verified; do not request the same authorization again.
 - A remote reader does not inherit local browser cookies, campus network access, or v2rayN routing. Successful access in Edge does not establish that command-line HTTP traffic takes the same route.
@@ -127,7 +127,7 @@ Before triggering a download, create the active task's `downloads/` directory an
 
 Verify completion through available download events/history and the actual saved file; report a limitation if completion cannot be established. Check that the file is nonempty and matches the expected format rather than a login/error page; record its path, size or hash, and sanitized source in the task index. When CNKI or another database offers multiple full-text formats, prefer PDF; retain CAJ/KDH only when PDF is unavailable. Preserve the actual format, checking PDF or CAJ/KDH signatures as applicable; a renamed extension does not convert a file or prove parser support. Retain the same task ID and shared budget.
 
-Full-text review follows the shared [retained-source rule](../research-browser/SKILL.md#work-directory-contract). Access tests, metadata discovery, and download-only requests need no automatic full-text extraction.
+Full-text review follows the shared [retained-source rule](../research-browser/SKILL.md#work-directory-contract). For access tests, metadata discovery, and download-only requests, report the corresponding observed result without claiming a full-text review.
 
 - If the publisher opens a PDF preview rather than downloading, inspect the preview's iframe/embed source. Use the normal download control, or a same-session browser retrieval when the user authorized the file. Validate the response before writing; do not send its authenticated URL to a remote reader or silently export browser cookies into a separate HTTP client.
 - Report per-database results separately. One successful article does not prove access to every journal, year, degree thesis, or file format. Download verification does not establish document readability.

@@ -7,7 +7,7 @@ description: Answer questions from supplied document text, immediate extraction,
 
 ## Contract
 
-Answer from the document evidence supplied for the question. Direct invocation accepts readable text as well as extraction artifacts; no prior skill invocation or generated document ID is required. This skill owns retrieval and answering, not source extraction, web verification, or knowledge-base registration. Responsibility assignment and missing-evidence handoffs follow [AGENTS](../AGENTS.md) and the [research router](../research-browser/SKILL.md#routing-and-handoffs).
+Answer from the document evidence supplied for the question. Accept readable text, directly readable text files, or accessible extraction artifacts; a generated document ID is not required. Retrieve and answer within that evidence set, preserving its provenance and coverage limits. Report unreadable source formats as missing evidence rather than inferring their contents.
 
 ## Inputs
 
@@ -57,7 +57,7 @@ A detailed handoff may contain:
 - <unanswered part and reason>
 ```
 
-Omit empty sections and operational counters from simple chat answers. Persist retrieval notes only when useful, as Markdown under the active task directory and registered in its index. Necessary local caches follow the shared `intermediates/` exception; prefer ephemeral caches. No raw provider responses or authentication data belong in evidence artifacts.
+Omit empty sections and operational counters from simple chat answers. Persist retrieval notes only when useful, as Markdown under the task directory resolved by the shared [storage contract](../research-browser/SKILL.md#work-directory-contract), and register them in its index. Necessary local caches follow its `intermediates/` exception; prefer ephemeral caches. No raw provider responses or authentication data belong in evidence artifacts.
 
 ## Failure handling
 

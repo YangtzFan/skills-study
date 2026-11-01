@@ -11,14 +11,14 @@ Markdown is the source of the content written into Word. Accept a Markdown file 
 
 If drafting is part of the request, prepare the content as Markdown before conversion. Inline Markdown is sufficient; do not require a physical `.md` intermediate unless requested or useful for reproducibility. If neither source Markdown nor authorization to draft is available, ask for the missing content. Do not silently expand this workflow into arbitrary Word-only editing.
 
-Capability selection and research handoffs belong to [AGENTS.md](../AGENTS.md) and [research-browser](../research-browser/SKILL.md). Reuse existing content and evidence; writing a Word document does not itself require extraction, research, or knowledge-base registration.
+Use the supplied Markdown and assets directly. Existing valid content and source citations remain authoritative within the requested conversion scope; document placement and style inspection are part of this operation.
 
 ## Resolve the operation
 
 - Carry forward the source Markdown, destination, template, and formatting requirements. Preserve supplied wording and semantics unless editing is authorized; conversion removes syntax markers by interpreting them, not by rewriting the prose.
 - For existing files, identify the target by heading, bookmark, table label, placeholder, or distinctive surrounding text. Inspect all matching locations before changing them. Ask only when ambiguous matches would change which content is edited.
 - Inspect the actual document structure and relevant styles, sections, tables, headers, footers, and existing review markup before choosing an editing method. A flattened text extraction cannot establish layout fidelity.
-- Respect the requested destination. Otherwise save a clearly named `.docx` in the user's task workspace, outside the skill installation. Preserve the original by default with a separate output; an explicit request to overwrite authorizes that write, subject to host permissions. Do not require another confirmation for an already authorized edit.
+- Respect the requested destination. Otherwise save a clearly named `.docx` in the user's task workspace, outside the skill installation. If no eligible task workspace or output path is known, ask for the output location rather than writing into the installation. Preserve the original by default with a separate output; an explicit request to overwrite authorizes that write, subject to host permissions. Do not require another confirmation for an already authorized edit.
 
 ## Choose available tools
 

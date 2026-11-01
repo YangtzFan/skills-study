@@ -7,7 +7,7 @@ description: Check premises, evidence, logic, quantitative claims, alternatives,
 
 ## Contract
 
-Apply the checks appropriate to the task selected by [AGENTS](../AGENTS.md), or invoke this skill directly to examine a claim, argument, or decision. Inputs are the intended outcome, available evidence, and constraints. No research tool, router run, artifact, or other skill is a prerequisite. Capability selection and research handoffs remain in AGENTS and research-browser.
+Examine the requested claim, argument, decision, or action using the intended outcome, available evidence, and constraints. These inputs are sufficient for a reasoning check; identify missing evidence without treating a check of the supplied material as a completed investigation.
 
 The output is an accurate, useful answer or action with checkable support. Do not expose private chain-of-thought or impose a visible reasoning template.
 

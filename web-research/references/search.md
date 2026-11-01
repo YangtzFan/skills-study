@@ -80,7 +80,7 @@ For an internal handoff, use the following structure. In a user-facing answer, p
 
 ## Failure and Security
 
-- Apply the Shared External Call Budget in `../../research-browser/SKILL.md`. Provider changes, network retries, and query rewrites share the same logical-operation and task counters.
+- Apply the [shared external-call budget](../../research-browser/SKILL.md#shared-external-call-budget). Provider changes, network retries, and query rewrites share the same logical-operation and task counters.
 - Retry transport failures only as allowed by that policy. Rewrite a query at most once when usable results are inadequate; do not rewrite to work around authentication or transport errors.
 - Stop retries with the same credentials on authentication or authorization errors. A known authorized alternative provider may be used within the remaining budget; never invent credentials or a provider endpoint.
 - Classify the observed failure before choosing another method: unreachable network/timeout, HTTP error, blank content, JavaScript/Loading, CAPTCHA/unusual traffic, irrelevant results, or a result wrapper that never reaches the source. A browser startup failure is a local capability failure, not a website rejection.

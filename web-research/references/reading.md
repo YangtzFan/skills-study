@@ -15,7 +15,7 @@ Choose by access requirements rather than a fixed fallback ladder:
 
 - Public static pages: use an available built-in reader or direct HTTP fetch; extract with an already-installed suitable library. A third-party reader may be used for public pages within the call budget.
 - Public rendered pages: use a working browser under [public-browser guidance](public-browser.md) when JavaScript, blank HTTP content, or a redirect prompt makes it useful. Reuse rendered evidence already obtained rather than refetching solely to change tools. Browser and HTTP client networking must be verified separately; neither necessarily inherits the other's proxy settings.
-- Access outside public reading follows the [router's worker boundaries and sequencing](../../research-browser/SKILL.md#worker-boundaries-and-direct-use). A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
+- For access outside the authorized public scope, record the limitation without using private sessions or a remote reader to bypass it. A remote reader does not inherit local cookies, campus IP access, or proxy configuration. Never send authentication-bearing URLs to it.
 
 Example static extraction command:
 
@@ -83,7 +83,7 @@ For an internal extraction handoff, use this structure. For a download-only task
 
 ## Failure and Security
 
-- Apply the Shared External Call Budget in `../../research-browser/SKILL.md`. Fetch retries, reader-service changes, and browser fallbacks consume the same operation budget; reprocessing an already-fetched body locally does not consume a network attempt.
+- Apply the [shared external-call budget](../../research-browser/SKILL.md#shared-external-call-budget). Fetch retries, reader-service changes, and browser fallbacks consume the same operation budget; reprocessing an already-fetched body locally does not consume a network attempt.
 - For HTTP 403 or 404 responses, report the status rather than retrying the same request. For HTTP 429, transient network errors, timeouts, or HTTP 5xx, retry only within the shared policy. Do not fabricate inaccessible page content.
 - If extraction is empty, classify the result before trying one suitable fallback within the remaining budget: blank content, JavaScript shell, redirect wrapper, and explicit verification require different responses. Browser rendering is available under the public-browser guidance; a missing capability or unapproved data transfer must be reported precisely rather than replaced by invented content.
 - On an explicit CAPTCHA or unusual-traffic page, stop automated resubmission in that session. Let the user complete verification only when an authorized interactive capability is available, verify completion, and otherwise report the restriction. Do not infer an IP-only cause from generic traffic warnings.
