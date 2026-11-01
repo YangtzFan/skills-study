@@ -26,6 +26,7 @@ When relevant project background may exist, inspect `.agents-work/knowledge/inde
 | [document-ingest](../document-ingest/SKILL.md) | Local text extraction, structure, anchors, local OCR, coverage, and extraction artifacts | Immediate or persisted extraction; no mandatory QA |
 | [document-qa](../document-qa/SKILL.md) | Retrieval, answers, quotations, and coverage checks over supplied document evidence | A supported document answer; no mandatory re-ingestion |
 | [image-analysis](../image-analysis/SKILL.md) | Image OCR, host vision, authorized relay analysis, and visual evidence | A visual answer or evidence handoff; no document ID required |
+| [intuitive-study-notes](../intuitive-study-notes/SKILL.md) | Gradual, intuitive Chinese study-note and lecture writing, worked examples, and selective proofs | Requested notes or revisions using available knowledge and sources; no mandatory research workflow |
 
 Choose the operation before its tool. Public browsing may use any supported available browser, including Edge, without an authentication prerequisite. The authenticated/institutional workflow requires available, authorized Microsoft Edge; if unavailable, report that specific limitation. Do not replace requested institutional search/access testing with public search. A public CAPTCHA remains public verification, not automatic authorization to use an account.
 
@@ -44,7 +45,8 @@ If another capability is necessary, return to the handoff rules below with the e
 5. For standalone image questions use `image-analysis` directly. For material figures/tables missed by page or document text extraction, pass only the necessary images with source anchors; preserve the result and any remaining gaps in the extraction handoff. Ingestion may OCR source text locally; visual interpretation and relay/host vision procedures belong to image analysis.
 6. For local/external comparisons, establish what the local source says before testing it against outside evidence. Keep document claims, external claims, and synthesis distinguishable. Independent work may run concurrently when it does not depend on the local interpretation.
 7. Synthesize only inspected evidence. Explain source disagreements, date/version differences, and incomplete coverage. Compare workload, hardware, baseline, units, population, and method before comparing numbers; a newer source is not automatically more accurate.
-8. Stop when the requested result is supported, the relevant capability is unavailable, or a shared limit is reached. Return usable partial evidence and its practical limitation without resetting task state.
+8. For study-note or lecture writing, use `intuitive-study-notes` with available knowledge and sources. If missing evidence requires another capability, complete only that operation and carry its result into the writing task. Writing alone requires no ingestion, document QA, or knowledge-base registration.
+9. Stop when the requested result is supported, the relevant capability is unavailable, or a shared limit is reached. Return usable partial evidence and its practical limitation without resetting task state.
 
 ## Knowledge-base operations
 

@@ -1,6 +1,6 @@
 # skills-study
 
-用于研究与证据处理的 Agent Skills。每个技能可按其能力独立调用；需要多项能力协作时，统一遵循 [AGENTS.md](AGENTS.md) 和 [research-browser](research-browser/SKILL.md)。本 README 提供导航和安装说明，不另设路由、预算或执行规则。
+用于研究、证据处理与学习笔记编写的 Agent Skills。每个技能可按其能力独立调用；技能选择遵循 [AGENTS.md](AGENTS.md)，研究中的跨能力衔接遵循 [research-browser](research-browser/SKILL.md)。本 README 提供导航和安装说明，不另设路由、预算或执行规则。
 
 ## 技能入口
 
@@ -11,6 +11,7 @@
 - [document-ingest](document-ingest/SKILL.md)：本地文档抽取、结构与出处定位、即时或持久化交接。
 - [document-qa](document-qa/SKILL.md)：从已提供的文本或抽取工件检索、回答和核对覆盖。
 - [image-analysis](image-analysis/SKILL.md)：图片 OCR、宿主视觉和经授权配置的中转分析。
+- [intuitive-study-notes](intuitive-study-notes/SKILL.md)：循序递进的中文理工科笔记与讲义写作，以直观解释、简单算例和必要公式组织内容，选择性保留证明。
 
 独立调用仍需满足实际输入和工具条件。例如文档问答需要可读证据，但不要求先运行抽取技能；图片分析不要求文档 ID；下载验证可以在确认文件后结束。共享政策引用不会自动启动整个研究流程。详细选择和交接以两个路由入口为准。
 
@@ -50,6 +51,10 @@ Reuse loaded instructions until they change.
 
 ```text
 使用 research-browser，将本地报告与最新公开证据比较，说明差异与证据限制。
+```
+
+```text
+使用 intuitive-study-notes，沿用现有笔记续写下一节，侧重直观理解，重要补充放入 [!TIP]。
 ```
 
 ## 工件导航

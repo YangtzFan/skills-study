@@ -15,11 +15,12 @@ Apply these instructions to every request. Higher-priority host instructions and
 | Extract a local source document into text, structure, and provenance | [document-ingest](document-ingest/SKILL.md) |
 | Answer from supplied document text or existing extraction artifacts | [document-qa](document-qa/SKILL.md) |
 | Interpret an image, screenshot, diagram, or scanned page | [image-analysis](image-analysis/SKILL.md) |
+| Write, extend, or polish Chinese science and engineering study notes or lecture material with gradual, intuitive explanations | [intuitive-study-notes](intuitive-study-notes/SKILL.md) |
 | Combine these capabilities, select project background evidence, or maintain the project knowledge base | [research-browser](research-browser/SKILL.md) |
 | Review/edit code, configuration, prompts, or skills; stable explanations; follow-ups with sufficient existing evidence | Direct task execution; no research workflow |
 | Host-specific operations such as process management, MixCode control, skill installation, official product documentation, or image generation | The matching host skill, when available |
 
-Route by the requested operation, not a file extension, URL, browser brand, or mention of an agent product. A Markdown file can be a source document or an engineering artifact. Public browsing may use any available supported browser; the authenticated Edge workflow requires available, authorized Microsoft Edge. A public CAPTCHA alone does not invoke authentication. Public retrieval cannot replace a requested institutional-access test.
+Route by the requested operation, not a file extension, URL, browser brand, or mention of an agent product. A Markdown file can be a source document or an engineering artifact. Study-note writing uses its writing skill directly; use research capabilities only for missing evidence or source processing the task actually requires. Public browsing may use any available supported browser; the authenticated Edge workflow requires available, authorized Microsoft Edge. A public CAPTCHA alone does not invoke authentication. Public retrieval cannot replace a requested institutional-access test.
 
 Cross-skill responsibility assignment and invocation rules live only here and in `research-browser/SKILL.md`. Workers define their inputs, internal methods, outputs, limitations, and completion criteria. If a worker discovers that the requested result needs another capability, preserve its result and use the router's handoff rules instead of inventing a new pipeline.
 
