@@ -2,3 +2,6 @@
 .agents-work/
 # Legacy artifact location from the previous repo-local work-dir scheme.
 work-dir/
+# WorkBuddy skill-management state files (written when .workbuddy/skills is a junction here).
+.disable_to_model_invocation_migration.json*
+.model_invocation_to_override_migration.json*
